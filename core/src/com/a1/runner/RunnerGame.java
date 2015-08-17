@@ -19,10 +19,6 @@ import java.util.Map;
 
 public class RunnerGame extends ApplicationAdapter {
 
-	boolean adsEnabled = false;
-	int adsShowingIntervalInSec = 90;
-	int lastAdsShowingTime;
-
 	int viewportWidth = 800;
 	int viewportHeight = 480;
 
@@ -76,20 +72,29 @@ public class RunnerGame extends ApplicationAdapter {
 	boolean isPause;
 	boolean showingAds;
 
-	private IAdsController adsController;
+	IAdsController adsController;
+	boolean adsEnabled = true;
+	int adsShowingIntervalInSec = 90;
+	int lastAdsShowingTime;
 
-	public RunnerGame(IAdsController adsController){
+	GameServices gameServices;
+	boolean gameServicesEnabled = true;
+
+	public RunnerGame(IAdsController adsController, GameServices actionResolver){
 
         this.adsController = adsController;
+		this.gameServices = actionResolver;
+		this.gameServices.setGameServicesEnabled(gameServicesEnabled);
 	}
 	
 	@Override
 	public void create () {
 		// TODO: rating
 		// TODO: set ads
-        // TODO: google records
         // TODO: coin sound
         // TODO: song
+		// TODO: rearange coins to not overlap
+		// TODO: Credits
 		lastAdsShowingTime = (int)(System.currentTimeMillis() / 1000);
 
 		// Don't load sounds if activity was already created once.
@@ -368,7 +373,7 @@ public class RunnerGame extends ApplicationAdapter {
 
         for (int i = 0; i < this.coins.size(); i++) {
             Coin c = this.coins.get(i);
-            if (c.boundingBox.x <= this.wallUpdatePosX) {
+			if (c.boundingBox.x <= this.wallUpdatePosX) {
                 this.coins.remove(i);
                 this.availableCoins.add(c);
             }
@@ -448,6 +453,20 @@ public class RunnerGame extends ApplicationAdapter {
         t.boundingBox.width = glyphLayout.width;
         t.boundingBox.height = glyphLayout.height;
         elems.put(t.id, start);
+
+		if (gameServicesEnabled) {
+			ControlElement topScores = new ControlElement();
+			t = new TextFigure();
+			topScores.figure = t;
+			t.id = "topscores";
+			t.text = "top scores";
+			glyphLayout.setText(regularFont, t.text);
+			t.boundingBox.x = (viewportWidth - glyphLayout.width) / 2;
+			t.boundingBox.y = start.figure.boundingBox.y - glyphLayout.height * 2f;
+			t.boundingBox.width = glyphLayout.width;
+			t.boundingBox.height = glyphLayout.height;
+			elems.put(t.id, topScores);
+		}
 
         return elems;
     }
@@ -608,18 +627,8 @@ public class RunnerGame extends ApplicationAdapter {
 
 			float bottom = -this.runner.boundingBox.height * 3;
 			if (this.runner.boundingBox.y < bottom) {
-
 				//this.runner.boundingBox.y = viewportHeight;
-                if (bestScore < runner.gatheredCoins) {
-                    bestScore = runner.gatheredCoins;
-                    prefs.putInteger("bestScore", bestScore);
-                    prefs.flush();
-                }
-
-				this.inGameOver = true;
-				this.inGame = false;
-				soundManager.stopMusic();
-                soundManager.playSound("death", 0.5f);
+                onGameOver();
 			}
 
 			this.runner.tick();
@@ -634,6 +643,30 @@ public class RunnerGame extends ApplicationAdapter {
 				runner.speed = runner.initSpeed + speedDelta * 3;
 			if (runner.gatheredCoins >= level5)
 				runner.speed = runner.initSpeed + speedDelta * 4;
+		}
+	}
+
+	private void onGameOver(){
+
+		this.inGameOver = true;
+		this.inGame = false;
+		soundManager.stopMusic();
+		soundManager.playSound("death", 0.5f);
+
+		try{
+			if (bestScore < runner.gatheredCoins) {
+				bestScore = runner.gatheredCoins;
+				prefs.putInteger("bestScore", bestScore);
+				prefs.flush();
+			}
+
+			if (gameServices.getSignedIn()){
+				gameServices.submitScore(bestScore);
+			}
+		}
+		catch (Exception e)	{
+			// dont fail the game.
+			e.printStackTrace();
 		}
 	}
 
@@ -686,6 +719,14 @@ public class RunnerGame extends ApplicationAdapter {
                 this.rearrangeCoins();
                 soundManager.playMusic();
             }
+			else if (selectedControlElement.figure.id == "topscores"){
+				if (gameServices.getSignedIn()) {
+					gameServices.showLeaderboard();
+				}
+				else{
+					gameServices.login();
+				}
+			}
             return;
         }
 
@@ -733,6 +774,7 @@ public class RunnerGame extends ApplicationAdapter {
 		catch(Exception e){
 			// don't fail the game.
 			showingAds = false;
+			e.printStackTrace();
 		}
 	}
 
