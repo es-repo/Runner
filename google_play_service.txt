@@ -1,0 +1,2 @@
+SHA1: AD:E7:41:94:FC:2A:F5:D1:39:9D:5F:15:BD:78:B9:E8:B8:4C:21:A9
+Package name: com.a1.runner.android
