@@ -6,6 +6,8 @@ public interface GameServices {
 
     void login();
 
+    void login(boolean showLeaderboardAfterLogging);
+
     void submitScore(int score);
 
     void unlockAchievement(String achievementId);

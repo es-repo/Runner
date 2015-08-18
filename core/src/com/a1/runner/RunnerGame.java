@@ -93,8 +93,10 @@ public class RunnerGame extends ApplicationAdapter {
 		// TODO: set ads
         // TODO: coin sound
         // TODO: song
+		// TODO: try another font.
 		// TODO: rearange coins to not overlap
-		// TODO: Credits
+		// TODO: credits
+		// TODO: Back button to menu
 		lastAdsShowingTime = (int)(System.currentTimeMillis() / 1000);
 
 		// Don't load sounds if activity was already created once.
@@ -724,7 +726,7 @@ public class RunnerGame extends ApplicationAdapter {
 					gameServices.showLeaderboard();
 				}
 				else{
-					gameServices.login();
+					gameServices.login(true);
 				}
 			}
             return;

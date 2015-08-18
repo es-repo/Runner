@@ -26,6 +26,7 @@ public class AndroidLauncher extends AndroidApplication implements IAdsControlle
 	InterstitialAd interstitialAd;
 	GameHelper gameHelper;
 	boolean gameServicesEnabled = true;
+	boolean showLeaderboardAfterLogging;
 
 	@Override
 	protected void onCreate (Bundle savedInstanceState) {
@@ -152,6 +153,12 @@ public class AndroidLauncher extends AndroidApplication implements IAdsControlle
 	}
 
 	@Override
+	public void login(boolean showLeaderboardAfterLogging){
+		this.showLeaderboardAfterLogging = true;
+		login();
+	}
+
+	@Override
 	public void submitScore(int score) {
 
 		if (!getGameServicesEnabled())
@@ -200,10 +207,15 @@ public class AndroidLauncher extends AndroidApplication implements IAdsControlle
 
 	@Override
 	public void onSignInSucceeded() {
+		if (showLeaderboardAfterLogging) {
+			showLeaderboardAfterLogging = false;
+			showLeaderboard();
+		}
 	}
 
 	@Override
 	public void onSignInFailed() {
+		showLeaderboardAfterLogging = false;
 	}
 
 	@Override
