@@ -91,12 +91,9 @@ public class RunnerGame extends ApplicationAdapter {
 	public void create () {
 		// TODO: rating
 		// TODO: set ads
-        // TODO: coin sound
-        // TODO: song
-		// TODO: try another font.
+        // TODO: try another font.
 		// TODO: rearange coins to not overlap
 		// TODO: credits
-		// TODO: Back button to menu
 		lastAdsShowingTime = (int)(System.currentTimeMillis() / 1000);
 
 		// Don't load sounds if activity was already created once.
@@ -236,9 +233,9 @@ public class RunnerGame extends ApplicationAdapter {
 		}
 
 		HashMap<String, String> musics = new HashMap<String, String>();
-		sounds.put("song", "song.mp3");
+		musics.put("song", "song.mp3");
 
-		for (Map.Entry<String, String> entry : sounds.entrySet())	{
+		for (Map.Entry<String, String> entry : musics.entrySet())	{
 			Music music = Gdx.audio.newMusic(Gdx.files.internal("sounds/" + entry.getValue()));
 			gameAssets.musics.put(entry.getKey(), music);
 			music.setLooping(true);
@@ -786,7 +783,7 @@ public class RunnerGame extends ApplicationAdapter {
 	}
 
 	void dispose(boolean noSounds) {
-		gameAssets.disposeNoSounds();
+		gameAssets.dispose(noSounds);
 		batch.dispose();
 	}
 

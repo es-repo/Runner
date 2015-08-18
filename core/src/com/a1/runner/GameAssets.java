@@ -12,10 +12,13 @@ public class GameAssets {
     public Map<String, Sound > sounds = new HashMap<String, Sound>();
     public Map<String, Music> musics = new HashMap<String, Music>();
 
-    private void dispose(boolean noSounds){
+    public void dispose(boolean noSounds){
         for (Map.Entry<String, Texture> entry : textures.entrySet())	{
             entry.getValue().dispose();
         }
+
+        if (noSounds)
+            return;
 
         for (Map.Entry<String, Sound> entry : sounds.entrySet())	{
             entry.getValue().dispose();
@@ -27,10 +30,6 @@ public class GameAssets {
     }
 
     public void dispose(){
-        dispose(true);
-    }
-
-    public void disposeNoSounds(){
         dispose(true);
     }
 }
