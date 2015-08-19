@@ -52,7 +52,9 @@ public class RunnerGame extends ApplicationAdapter {
 
 	long ticks;
 
-    private int coinsCount = 6;
+    int coinsCount = 6;
+	float supercoinSize = 40;
+	float coinSize = 32;
     ArrayList<Coin> coins;
 	ArrayList<Coin> availableCoins;
 
@@ -416,14 +418,14 @@ public class RunnerGame extends ApplicationAdapter {
         for (int i = 0; i < coinsCount; i++) {
             Coin c = new Coin();
 			c.texture = gameAssets.textures.get("coin");
-            c.boundingBox.width = this.wallTileSize;
-            c.boundingBox.height = this.wallTileSize;
+            c.boundingBox.width = coinSize;
+            c.boundingBox.height = coinSize;
 			c.boundingBox.x = wallUpdatePosX;
             c.sound = gameAssets.sounds.get("coin");
             coins.add(c);
         }
         Coin superCoin = coins.get(coinsCount - 1);
-        superCoin.boundingBox.height = superCoin.boundingBox.width = 40;
+        superCoin.boundingBox.height = superCoin.boundingBox.width = supercoinSize;
         superCoin.isSuper = true;
         superCoin.texture = gameAssets.textures.get("supercoin");
         return coins;
@@ -446,16 +448,36 @@ public class RunnerGame extends ApplicationAdapter {
 
             int ci = (int)(Math.random() * availableCoins.size());
 			Coin coin = availableCoins.get(ci);
-            double probability = coin.isSuper ? 0.0002 : 0.5;
+            double probability = 0.5;//coin.isSuper ? 0.0002 : 0.5;
             double v = Math.random();
             if (v < probability) {
                 Wall w = (Wall)this.walls[i].get(this.walls[i].size() - 1);
-				coin.boundingBox.x = (float)(w.boundingBox.x + Math.random() * (w.boundingBox.width - coin.boundingBox.width));
+				coin.boundingBox.x = getCoinRandomPosition(w); //(float)(w.boundingBox.x + Math.random() * (w.boundingBox.width - coin.boundingBox.width));
 				coin.boundingBox.y = w.boundingBox.y + w.boundingBox.height;
                 availableCoins.remove(coin);
             }
         }
     }
+
+	private float getCoinRandomPosition(Wall w){
+		int s = (int)(w.boundingBox.width / supercoinSize);
+		for (int i = 0; i < s; i++){
+			int p = (int)(Math.random() * s);
+			float x = w.boundingBox.x + p * supercoinSize + coinSize / 2;
+			float y = w.boundingBox.y + w.boundingBox.height + coinSize / 2;
+			boolean positionIsFree = true;
+			for (Coin c : coins){
+				if (c.boundingBox.contains(x, y)) {
+					positionIsFree = false;
+					break;
+				}
+			}
+			if (positionIsFree)
+				return w.boundingBox.x + p * supercoinSize;
+
+		}
+		return wallUpdatePosX;
+	}
 
     private void takeCoin(){
         for (int i = 0; i < this.coins.size(); i++) {
