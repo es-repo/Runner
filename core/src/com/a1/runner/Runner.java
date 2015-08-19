@@ -4,7 +4,6 @@ import com.badlogic.gdx.graphics.Texture;
 
 public class Runner extends Sprite {
 
-    private int ticks = 0;
     SoundManager soundManager;
     public float initSpeed = 7f;
     public float speed = initSpeed;
@@ -21,20 +20,20 @@ public class Runner extends Sprite {
         this.textures = textures;
     }
 
-    public void tick() {
-        this.ticks++;
+    @Override
+    public void tick(long ticks) {
 
         if (this.isInJumpOrInFall()) {
             this.currentImageIndex = 2;
         }
         else {
-            if (this.ticks % 4 == 0) {
+            if (ticks % 4 == 0) {
                 this.currentImageIndex++;
                 if (this.currentImageIndex >= this.textures.length)
                     this.currentImageIndex = 0;
             }
 
-            if (this.ticks % 12 == 0){
+            if (ticks % 12 == 0){
                 soundManager.playSound("step", 0.6f);
             }
         }

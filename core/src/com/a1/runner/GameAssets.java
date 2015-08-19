@@ -32,4 +32,56 @@ public class GameAssets {
     public void dispose(){
         dispose(true);
     }
+
+    public void loadAssets(boolean noSounds){
+        HashMap<String, String> textures = new HashMap<String, String>();
+        textures.put("coin", "coin.png");
+        textures.put("supercoin", "supercoin.png");
+        textures.put("runner1", "runner1.png");
+        textures.put("runner2", "runner2.png");
+        textures.put("runner3", "runner3.png");
+        textures.put("tile", "tile.png");
+        textures.put("tile2", "tile2.png");
+        textures.put("tile3", "tile3.png");
+        textures.put("tile4", "tile4.png");
+        textures.put("tile5", "tile5.png");
+        textures.put("particle", "particle.png");
+        textures.put("pause", "pause.png");
+        textures.put("play", "play.png");
+        textures.put("soundon", "soundon.png");
+        textures.put("soundoff", "soundoff.png");
+
+        textures.put("buttons.start", "buttons/start.png");
+        textures.put("buttons.start_pressed", "buttons/start_pressed.png");
+        textures.put("buttons.topscores", "buttons/topscores.png");
+        textures.put("buttons.topscores_pressed", "buttons/topscores_pressed.png");
+
+        for (Map.Entry<String, String> entry : textures.entrySet())	{
+            this.textures.put(entry.getKey(), new Texture(Gdx.files.internal("textures/" + entry.getValue())));
+        }
+
+        if (noSounds)
+            return;
+
+        HashMap<String, String> sounds = new HashMap<String, String>();
+        sounds.put("coin", "coin.mp3");
+        sounds.put("death", "death.wav");
+        sounds.put("jump", "jump.wav");
+        sounds.put("start", "start.wav");
+        sounds.put("step", "step.wav");
+
+        for (Map.Entry<String, String> entry : sounds.entrySet())	{
+            this.sounds.put(entry.getKey(), Gdx.audio.newSound(Gdx.files.internal("sounds/" + entry.getValue())));
+        }
+
+        HashMap<String, String> musics = new HashMap<String, String>();
+        musics.put("song", "song.mp3");
+
+        for (Map.Entry<String, String> entry : musics.entrySet())	{
+            Music music = Gdx.audio.newMusic(Gdx.files.internal("sounds/" + entry.getValue()));
+            this.musics.put(entry.getKey(), music);
+            music.setLooping(true);
+        }
+    }
+
 }

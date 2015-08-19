@@ -3,7 +3,6 @@ package com.a1.runner;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
-import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -15,7 +14,6 @@ import com.badlogic.gdx.math.Vector3;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 
 public class RunnerGame extends ApplicationAdapter {
 
@@ -52,33 +50,36 @@ public class RunnerGame extends ApplicationAdapter {
     int bestScore;
 	boolean soundOff;
 
+	long ticks;
+
     private int coinsCount = 6;
     ArrayList<Coin> coins;
-    ArrayList<Coin> availableCoins;
+	ArrayList<Coin> availableCoins;
 
-    int particlesCount = 100;
+	int particlesCount = 100;
     ArrayList<Particle> particles;
 
-    HashMap<String, ControlElement> menuControlElements;
-	HashMap<String, ControlElement> inGameControlElements;
-    HashMap<String, ControlElement> commonControlElements;
+	ArrayList<Figure> touchedFigures = new ArrayList<Figure>();
 
 	Vector3 touchPos = new Vector3();
 
 	boolean inMenu = true;
 	boolean inGame;
 	boolean inGameOver;
-    boolean playSoundInMenu = true;
 	boolean isPause;
-	boolean showingAds;
 
 	IAdsController adsController;
-	boolean adsEnabled = true;
+	boolean adsEnabled = false;
 	int adsShowingIntervalInSec = 90;
 	int lastAdsShowingTime;
 
 	GameServices gameServices;
 	boolean gameServicesEnabled = true;
+
+	Scene menuScene;
+	Scene gameScene;
+	Scene gameOverScene;
+	Scene currentScene;
 
 	public RunnerGame(IAdsController adsController, GameServices actionResolver){
 
@@ -89,12 +90,13 @@ public class RunnerGame extends ApplicationAdapter {
 	
 	@Override
 	public void create () {
-		// TODO: rating
-		// TODO: set ads
-        // TODO: try another font.
 		// TODO: rearange coins to not overlap
+		// TODO: set ads
+		// TODO: rating
 		// TODO: credits
 		lastAdsShowingTime = (int)(System.currentTimeMillis() / 1000);
+
+		initPrefs();
 
 		// Don't load sounds if activity was already created once.
 		// Otherwise it leads to errors with SoundPool after several
@@ -103,50 +105,74 @@ public class RunnerGame extends ApplicationAdapter {
 		if (gameAssets == null){
             gameAssets = new GameAssets();
         }
-		loadAssets(dontLoadSoundsAgain);
-
-		initPrefs();
-
-        soundManager = new SoundManager(gameAssets.sounds, gameAssets.musics.get("song"));
+		gameAssets.loadAssets(dontLoadSoundsAgain);
+		soundManager = new SoundManager(gameAssets.sounds, gameAssets.musics.get("song"));
 		if (soundOff)
 			soundManager.off();
 
+		regularFont = new BitmapFont(Gdx.files.internal("fonts/vermin_vibes_1989.fnt"));
+		regularFont.getData().scale(0.5f);
+		regularFont.setColor(com.badlogic.gdx.graphics.Color.WHITE);
+		glyphLayout = new GlyphLayout();
+
+		// LibGDX stuff.
 		camera = new OrthographicCamera();
 		camera.setToOrtho(false, viewportWidth, viewportHeight);
 		batch = new SpriteBatch();
 		shapeRenderer = new ShapeRenderer();
 
-        regularFont = new BitmapFont(Gdx.files.internal("fonts/presstart.fnt"));
-        regularFont.setColor(com.badlogic.gdx.graphics.Color.WHITE);
-        glyphLayout = new GlyphLayout();
+		// Create figures.
+		particles = createParticles();
 
-        runner = createRunner();
-        initRunner(runner);
+		runner = createRunner();
+		initRunner(runner);
 
-        walls = createWalls();
+		walls = createWalls();
 		rearrangeWalls();
 
-        coins = new ArrayList<Coin>();
-        availableCoins = createCoins();
+		coins = createCoins();
+		availableCoins = new ArrayList<Coin>();
 
-        particles = createParticles();
+		ArrayList<Figure> soundOnOffIcons = createSoundOfIcons();
 
-        menuControlElements = createMenuControlElements();
-		inGameControlElements = createInGameControlElements();
-        commonControlElements = createCommonControlElements();
+		menuScene = new Scene();
+		menuScene.figures.addAll(particles);
+		menuScene.figures.addAll(createMenuButtons());
+		menuScene.figures.addAll(soundOnOffIcons);
+
+		gameScene = new Scene();
+		gameScene.figures.addAll(particles);
+		for (ArrayList wallsLevel : walls)
+			gameScene.figures.addAll(wallsLevel);
+		gameScene.figures.addAll(coins);
+		gameScene.figures.add(runner);
+		gameScene.figures.addAll(createPausePlayIcons());
+		gameScene.figures.addAll(soundOnOffIcons);
+
+		gameOverScene = new Scene();
+		gameOverScene.figures.addAll(particles);
+		gameOverScene.figures.addAll(soundOnOffIcons);
+
+		currentScene = menuScene;
 	}
 
 	private void initPrefs(){
-		prefs = Gdx.app.getPreferences("Runner");
-		if (!prefs.contains("bestScore")) {
-			prefs.putInteger("bestScore", 0);
-		}
-		bestScore = prefs.getInteger("bestScore");
+		try {
+			prefs = Gdx.app.getPreferences("Runner");
+			if (!prefs.contains("bestScore")) {
+				prefs.putInteger("bestScore", 0);
+			}
+			bestScore = prefs.getInteger("bestScore");
 
-		if (!prefs.contains("sondoff")){
-			prefs.putBoolean("soundoff", false);
+			if (!prefs.contains("sondoff")) {
+				prefs.putBoolean("soundoff", false);
+			}
+			soundOff = prefs.getBoolean("soundoff");
 		}
-		soundOff = prefs.getBoolean("soundoff");
+		catch(Exception e){
+			// don't fail the game.
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -155,7 +181,7 @@ public class RunnerGame extends ApplicationAdapter {
 		if (Gdx.input.justTouched()) {
 			touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
 			camera.unproject(touchPos);
-			onAction(touchPos.x, touchPos.y);
+			onTouch(touchPos.x, touchPos.y);
 		}
 
 		doLogicStep();
@@ -166,27 +192,16 @@ public class RunnerGame extends ApplicationAdapter {
 		batch.setProjectionMatrix(camera.combined);
 		batch.begin();
 
-        drawParticles();
+        drawScene(currentScene);
 
 		if (inGame) {
-			drawWalls();
-            drawCoins();
-			drawRunner(runner);
 			drawScore();
-			drawControlElements(inGameControlElements);
-            drawControlElements(commonControlElements);
 		}
 		else if (inMenu){
-			drawMenu();
-            drawControlElements(commonControlElements);
-            if (playSoundInMenu){
-                soundManager.playSound("start", 0.5f);
-                playSoundInMenu = false;
-            }
+			drawTitle();
 		}
 		else if (inGameOver){
 			drawGameOver();
-            drawControlElements(commonControlElements);
 		}
 
 		batch.end();
@@ -194,52 +209,131 @@ public class RunnerGame extends ApplicationAdapter {
 		shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
 		shapeRenderer.setProjectionMatrix(camera.combined);
 		shapeRenderer.end();
+
+		ticks++;
 	}
 
-	private void loadAssets(boolean noSounds){
-		HashMap<String, String> textures = new HashMap<String, String>();
-		textures.put("coin", "coin.png");
-        textures.put("supercoin", "supercoin.png");
-		textures.put("runner1", "runner1.png");
-		textures.put("runner2", "runner2.png");
-		textures.put("runner3", "runner3.png");
-		textures.put("tile", "tile.png");
-        textures.put("tile2", "tile2.png");
-        textures.put("tile3", "tile3.png");
-		textures.put("tile4", "tile4.png");
-		textures.put("tile5", "tile5.png");
-        textures.put("particle", "particle.png");
-		textures.put("pause", "pause.png");
-		textures.put("play", "play.png");
-        textures.put("soundon", "soundon.png");
-        textures.put("soundoff", "soundoff.png");
+	private ArrayList<Button> createMenuButtons() {
+		ArrayList<Button> buttons = new ArrayList<Button>();
 
-		for (Map.Entry<String, String> entry : textures.entrySet())	{
-			gameAssets.textures.put(entry.getKey(), new Texture(Gdx.files.internal("textures/" + entry.getValue())));
+		Button startButton = new Button(gameAssets.textures.get("buttons.start"), gameAssets.textures.get("buttons.start_pressed"));
+		startButton.boundingBox.width = 360;
+		startButton.boundingBox.height = 64;
+		startButton.boundingBox.y = viewportHeight / 2 - startButton.boundingBox.height;
+		centerFigureHorizontally(startButton);
+		startButton.setClickHandler(new ClickHandler() {
+			@Override
+			public void action() {
+				inMenu = false;
+				inGame = true;
+				initRunner(runner);
+				initWallsAndCoinsPositions();
+				rearrangeWalls();
+				rearrangeCoins();
+				currentScene = gameScene;
+				soundManager.playMusic();
+			}
+		});
+		buttons.add(startButton);
+
+		if (gameServicesEnabled) {
+			Button topScoresButton = new Button(gameAssets.textures.get("buttons.topscores"), gameAssets.textures.get("buttons.topscores_pressed"));
+			topScoresButton.boundingBox.width = 360;
+			topScoresButton.boundingBox.height = 64;
+			topScoresButton.boundingBox.y = startButton.boundingBox.y - startButton.boundingBox.height * 1.2f;
+			centerFigureHorizontally(topScoresButton);
+			topScoresButton.setClickHandler(new ClickHandler() {
+				@Override
+				public void action() {
+//					if (gameServices.getSignedIn()) {
+//						gameServices.showLeaderboard();
+//					} else {
+//						gameServices.login(true);
+//					}
+				}
+			});
+			buttons.add(topScoresButton);
 		}
+		return buttons;
+	}
 
-		if (noSounds)
-			return;
+	private ArrayList<Figure> createPausePlayIcons(){
+		ArrayList<Figure> icons = new ArrayList<Figure>();
 
-		HashMap<String, String> sounds = new HashMap<String, String>();
-		sounds.put("coin", "coin.mp3");
-		sounds.put("death", "death.wav");
-		sounds.put("jump", "jump.wav");
-		sounds.put("start", "start.wav");
-		sounds.put("step", "step.wav");
+		final Sprite pause = new Sprite();
+		final Sprite play = new Sprite();
 
-		for (Map.Entry<String, String> entry : sounds.entrySet())	{
-			gameAssets.sounds.put(entry.getKey(), Gdx.audio.newSound(Gdx.files.internal("sounds/" + entry.getValue())));
-		}
+		pause.texture = gameAssets.textures.get("pause");
+		pause.boundingBox.width = pause.boundingBox.height = iconSize;
+		pause.boundingBox.x = viewportWidth - iconSize;
+		pause.boundingBox.y = viewportHeight - iconSize - padding;
+		pause.setClickHandler(new ClickHandler() {
+			@Override
+			public void action() {
+				isPause = true;
+				play.isVisible = true;
+				pause.isVisible = false;
+				soundManager.pauseMusic();
+			}
+		});
+		icons.add(pause);
 
-		HashMap<String, String> musics = new HashMap<String, String>();
-		musics.put("song", "song.mp3");
+		float playSize = 96;
+		play.texture = gameAssets.textures.get("play");
+		play.boundingBox.width = play.boundingBox.height = playSize;
+		play.boundingBox.x = (viewportWidth - playSize) / 2;
+		play.boundingBox.y = (viewportHeight - playSize) / 2;
+		play.isVisible = false;
+		play.setClickHandler(new ClickHandler() {
+			@Override
+			public void action() {
+				isPause = false;
+				play.isVisible = false;
+				pause.isVisible = true;
+				soundManager.playMusic();
+			}
+		});
+		icons.add(play);
 
-		for (Map.Entry<String, String> entry : musics.entrySet())	{
-			Music music = Gdx.audio.newMusic(Gdx.files.internal("sounds/" + entry.getValue()));
-			gameAssets.musics.put(entry.getKey(), music);
-			music.setLooping(true);
-		}
+		return icons;
+	}
+
+	private ArrayList<Figure> createSoundOfIcons(){
+		ArrayList<Figure> icons = new ArrayList<Figure>();
+
+		final Sprite on = new Sprite();
+		final Sprite off = new Sprite();
+
+		on.texture = gameAssets.textures.get("soundon");
+		on.boundingBox.width = on.boundingBox.height = iconSize;
+		on.boundingBox.x = viewportWidth - iconSize;
+		on.isVisible = !soundOff;
+		on.setClickHandler(new ClickHandler() {
+			@Override
+			public void action() {
+				on.isVisible = false;
+				off.isVisible = true;
+				soundOff();
+			}
+		});
+		icons.add(on);
+
+		off.texture = gameAssets.textures.get("soundoff");
+		off.boundingBox.width = off.boundingBox.height = iconSize;
+		off.boundingBox.x = viewportWidth - iconSize;
+		off.isVisible = soundOff;
+
+		off.setClickHandler(new ClickHandler() {
+			@Override
+			public void action() {
+				on.isVisible = true;
+				off.isVisible = false;
+				soundOn();
+			}
+		});
+		icons.add(off);
+
+		return icons;
 	}
 
 	private ArrayList[] createWalls(){
@@ -260,19 +354,6 @@ public class RunnerGame extends ApplicationAdapter {
 			}
 		}
 		return walls;
-	}
-
-	private void drawWalls(){
-		for (int i = 0; i < walls.length; i++) {
-			for (int j = 0; j < walls[i].size(); j++){
-				Wall w = (Wall)walls[i].get(j);
-				drawWall(w);
-			}
-		}
-	}
-
-	private void drawWall(Wall w) {
-		drawFigure(w);
 	}
 
 	private void rearrangeWalls() {
@@ -330,10 +411,6 @@ public class RunnerGame extends ApplicationAdapter {
 		r.gatheredCoins = 0;
 	}
 
-	private void drawRunner(Runner r){
-		drawFigure(r);
-	}
-
     private ArrayList<Coin> createCoins(){
         ArrayList<Coin> coins = new ArrayList<Coin>();
         for (int i = 0; i < coinsCount; i++) {
@@ -341,6 +418,7 @@ public class RunnerGame extends ApplicationAdapter {
 			c.texture = gameAssets.textures.get("coin");
             c.boundingBox.width = this.wallTileSize;
             c.boundingBox.height = this.wallTileSize;
+			c.boundingBox.x = wallUpdatePosX;
             c.sound = gameAssets.sounds.get("coin");
             coins.add(c);
         }
@@ -353,28 +431,28 @@ public class RunnerGame extends ApplicationAdapter {
 
     private void rearrangeCoins() {
 
-        for (int i = 0, j = 0; i < this.walls.length; i++, j++) {
-            if (this.availableCoins.size() == 0)
+		availableCoins.clear();
+		for (int i = 0; i < this.coins.size(); i++) {
+			Coin c = this.coins.get(i);
+			if (c.boundingBox.x <= this.wallUpdatePosX) {
+				availableCoins.add(c);
+			}
+		}
+
+        for (int i = 0; i < this.walls.length; i++) {
+
+            if (availableCoins.size() == 0)
                 break;
 
-            j = j % availableCoins.size();
-            Coin c = this.availableCoins.get(j);
-            double probability = c.isSuper ? 0.0002 : 0.5;
+            int ci = (int)(Math.random() * availableCoins.size());
+			Coin coin = availableCoins.get(ci);
+            double probability = coin.isSuper ? 0.0002 : 0.5;
             double v = Math.random();
             if (v < probability) {
                 Wall w = (Wall)this.walls[i].get(this.walls[i].size() - 1);
-                c.boundingBox.x = (float)(w.boundingBox.x + Math.random() * (w.boundingBox.width - c.boundingBox.width));
-                c.boundingBox.y = w.boundingBox.y + w.boundingBox.height;
-                this.availableCoins.remove(c);
-                this.coins.add(c);
-            }
-        }
-
-        for (int i = 0; i < this.coins.size(); i++) {
-            Coin c = this.coins.get(i);
-			if (c.boundingBox.x <= this.wallUpdatePosX) {
-                this.coins.remove(i);
-                this.availableCoins.add(c);
+				coin.boundingBox.x = (float)(w.boundingBox.x + Math.random() * (w.boundingBox.width - coin.boundingBox.width));
+				coin.boundingBox.y = w.boundingBox.y + w.boundingBox.height;
+                availableCoins.remove(coin);
             }
         }
     }
@@ -384,17 +462,10 @@ public class RunnerGame extends ApplicationAdapter {
             Coin c = this.coins.get(i);
             if (this.runner.isNearCoin(c)) {
                 this.runner.gatheredCoins+= c.isSuper ? 10 : 1;
-				this.coins.remove(i);
-                this.availableCoins.add(c);
+				c.boundingBox.x = wallUpdatePosX;
                 soundManager.playSound("coin", 0.4f);
 				break;
             }
-        }
-    }
-
-    private void drawCoins(){
-        for (int i = 0; i < coins.size(); i++) {
-            drawFigure(coins.get(i));
         }
     }
 
@@ -426,122 +497,20 @@ public class RunnerGame extends ApplicationAdapter {
         return particles;
     }
 
-    private void drawParticles(){
-        for (int i = 0; i < particles.size(); i++)
-			drawFigure(particles.get(i));
-    }
-
 	private void drawScore(){
 		String score = String.valueOf(runner.gatheredCoins);
 		glyphLayout.setText(regularFont, score);
 		regularFont.draw(batch, glyphLayout, (viewportWidth - glyphLayout.width) / 2, viewportHeight - padding);
 	}
 
-    private HashMap<String, ControlElement> createMenuControlElements(){
-
-        HashMap<String, ControlElement> elems = new HashMap<String, ControlElement>();
-
-        ControlElement start = new ControlElement();
-        TextFigure t = new TextFigure();
-        start.figure = t;
-        t.id = "start";
-        t.text = "start!";
-        glyphLayout.setText(regularFont, t.text);
-        t.boundingBox.x = (viewportWidth - glyphLayout.width) / 2;
-        t.boundingBox.y = viewportHeight / 2 - glyphLayout.height;
-        t.boundingBox.width = glyphLayout.width;
-        t.boundingBox.height = glyphLayout.height;
-        elems.put(t.id, start);
-
-		if (gameServicesEnabled) {
-			ControlElement topScores = new ControlElement();
-			t = new TextFigure();
-			topScores.figure = t;
-			t.id = "topscores";
-			t.text = "top scores";
-			glyphLayout.setText(regularFont, t.text);
-			t.boundingBox.x = (viewportWidth - glyphLayout.width) / 2;
-			t.boundingBox.y = start.figure.boundingBox.y - glyphLayout.height * 2f;
-			t.boundingBox.width = glyphLayout.width;
-			t.boundingBox.height = glyphLayout.height;
-			elems.put(t.id, topScores);
-		}
-
-        return elems;
-    }
-
-	private HashMap<String, ControlElement> createInGameControlElements(){
-
-		HashMap<String, ControlElement> elems = new HashMap<String, ControlElement>();
-
-		ControlElement pause = new ControlElement();
-        Sprite s = new Sprite();
-        pause.figure = s;
-		s.id = "pause";
-		s.texture = gameAssets.textures.get("pause");
-		s.boundingBox.width = s.boundingBox.height = iconSize;
-		s.boundingBox.x = viewportWidth - iconSize;
-		s.boundingBox.y = viewportHeight - iconSize - padding;
-		elems.put(s.id, pause);
-
-		float playSize = 96;
-		ControlElement play = new ControlElement();
-        s = new Sprite();
-        play.figure = s;
-		s.id = "play";
-		s.texture = gameAssets.textures.get("play");
-		s.boundingBox.width = s.boundingBox.height = playSize;
-		s.boundingBox.x = (viewportWidth - playSize) / 2;
-		s.boundingBox.y = (viewportHeight - playSize) / 2;
-		s.isVisisble = false;
-		elems.put(s.id, play);
-
-		return elems;
-	}
-
-    private HashMap<String, ControlElement> createCommonControlElements(){
-
-        HashMap<String, ControlElement> elems = new HashMap<String, ControlElement>();
-
-        ControlElement soundon = new ControlElement();
-        Sprite s = new Sprite();
-        soundon.figure = s;
-        s.id = "soundon";
-        s.texture = gameAssets.textures.get("soundon");
-        s.boundingBox.width = s.boundingBox.height = iconSize;
-        s.boundingBox.x = viewportWidth - iconSize;
-		s.isVisisble = !soundOff;
-        elems.put(s.id, soundon);
-
-        ControlElement soundoff = new ControlElement();
-        s = new Sprite();
-        soundoff.figure = s;
-        s.id = "soundoff";
-        s.texture = gameAssets.textures.get("soundoff");
-        s.boundingBox.width = s.boundingBox.height = iconSize;
-        s.boundingBox.x = viewportWidth - iconSize;
-        s.isVisisble = soundOff;
-        elems.put(s.id, soundoff);
-
-        return elems;
-    }
-
-    private void drawControlElements(Map<String, ControlElement> elems){
-        for (Map.Entry<String, ControlElement> entry : elems.entrySet()){
-            drawFigure(entry.getValue().figure);
-        }
-    }
-
-	private void drawMenu(){
+	private void drawTitle(){
         float sx = regularFont.getScaleX();
         float sy = regularFont.getScaleX();
         regularFont.getData().setScale(sx * 3.5f, sy * 3.5f);
         glyphLayout.setText(regularFont, "RUNNER");
         regularFont.draw(batch, glyphLayout, (viewportWidth - glyphLayout.width) / 2,
-                viewportHeight / 2 + (viewportHeight / 2 - glyphLayout.height) / 2 + glyphLayout.height);
+				viewportHeight / 2 + (viewportHeight / 2 - glyphLayout.height) / 2 + glyphLayout.height);
         regularFont.getData().setScale(sx, sy);
-
-        drawControlElements(menuControlElements);
 	}
 
 	private void drawGameOver(){
@@ -572,10 +541,12 @@ public class RunnerGame extends ApplicationAdapter {
         regularFont.draw(batch, glyphLayout, xe - glyphLayout.width, y);
     }
 
-	protected void doLogicStep() {
+	void doLogicStep() {
 
 		if (isPause)
 			return;
+
+		currentScene.tick(ticks);
 
 		for (int i = 0; i < this.particles.size(); i++) {
 			Particle p = this.particles.get(i);
@@ -630,8 +601,6 @@ public class RunnerGame extends ApplicationAdapter {
                 onGameOver();
 			}
 
-			this.runner.tick();
-
 			runner.speed = runner.initSpeed;
 			float speedDelta = 0.5f;
 			if (runner.gatheredCoins >= level2)
@@ -651,6 +620,7 @@ public class RunnerGame extends ApplicationAdapter {
 		this.inGame = false;
 		soundManager.stopMusic();
 		soundManager.playSound("death", 0.5f);
+		currentScene = gameOverScene;
 
 		try{
 			if (bestScore < runner.gatheredCoins) {
@@ -669,85 +639,33 @@ public class RunnerGame extends ApplicationAdapter {
 		}
 	}
 
-	private void onAction(float x, float y) {
+	private void onTouch(float x, float y) {
 
-		if (showingAds)
-			return;
-
-        ControlElement selectedControlElement = null;
-        if (inGame) {
-            selectedControlElement = getSelectedControlElement(x, y, inGameControlElements);
-        }
-        else if (inMenu){
-            selectedControlElement = getSelectedControlElement(x, y, menuControlElements);
-        }
-
-        if (selectedControlElement == null) {
-            selectedControlElement = getSelectedControlElement(x, y, commonControlElements);
-        }
-
-        if (selectedControlElement != null) {
-            if (selectedControlElement.figure.id == "play") {
-                isPause = false;
-                inGameControlElements.get("play").figure.isVisisble = false;
-                inGameControlElements.get("pause").figure.isVisisble = true;
-                soundManager.playMusic();
-            }
-            else if (selectedControlElement.figure.id == "pause") {
-                isPause = true;
-                inGameControlElements.get("play").figure.isVisisble = true;
-                inGameControlElements.get("pause").figure.isVisisble = false;
-                soundManager.pauseMusic();
-            }
-            else if (selectedControlElement.figure.id == "soundoff"){
-                commonControlElements.get("soundon").figure.isVisisble = true;
-                commonControlElements.get("soundoff").figure.isVisisble = false;
-				soundOn();
-            }
-            else if (selectedControlElement.figure.id == "soundon"){
-                commonControlElements.get("soundon").figure.isVisisble = false;
-                commonControlElements.get("soundoff").figure.isVisisble = true;
-				soundOff();
-            }
-            else if (selectedControlElement.figure.id == "start"){
-                this.inMenu = false;
-                this.inGame = true;
-                this.initRunner(runner);
-                this.initWallsAndCoinsPositions();
-                this.rearrangeWalls();
-                this.rearrangeCoins();
-                soundManager.playMusic();
-            }
-			else if (selectedControlElement.figure.id == "topscores"){
-				if (gameServices.getSignedIn()) {
-					gameServices.showLeaderboard();
-				}
-				else{
-					gameServices.login(true);
-				}
-			}
-            return;
-        }
+		ArrayList<Figure> touchedFigures = getTouchedFigure(currentScene.figures, x, y);
+		for(Figure f : touchedFigures) {
+			if (f.click())
+				return;
+		}
 
 		if (this.inGame) {
 			this.runner.jump();
 		}
 		else if (this.inGameOver) {
 			this.inMenu = true;
-            playSoundInMenu = true;
 			this.inGameOver = false;
             soundManager.playSound("start", 0.5f);
+			currentScene = menuScene;
 			tryShowAds();
 		}
 	}
 
-	private ControlElement getSelectedControlElement(float x, float y, HashMap<String, ControlElement> elements){
-		for (Map.Entry<String, ControlElement> entry : elements.entrySet()){
-			ControlElement e = entry.getValue();
-			if (e.figure.isVisisble && e.figure.boundingBox.contains(x, y))
-				return e;
+	private ArrayList<Figure> getTouchedFigure(ArrayList<Figure> figures, float x, float y) {
+		touchedFigures.clear();
+		for(Figure f : figures){
+			if (f.isVisible && f.boundingBox.contains(x, y))
+				touchedFigures.add(f);
 		}
-		return null;
+		return touchedFigures;
 	}
 
 	private void tryShowAds(){
@@ -763,7 +681,6 @@ public class RunnerGame extends ApplicationAdapter {
 				@Override
 				public void run() {
 					//Gdx.app.exit();
-					showingAds = false;
 					lastAdsShowingTime = (int)(System.currentTimeMillis() / 1000);
                     // Game  activity will be restarted after the ads closing so force to call dispose.
 					//disposeNoSounds();
@@ -772,7 +689,6 @@ public class RunnerGame extends ApplicationAdapter {
 		}
 		catch(Exception e){
 			// don't fail the game.
-			showingAds = false;
 			e.printStackTrace();
 		}
 	}
@@ -791,9 +707,14 @@ public class RunnerGame extends ApplicationAdapter {
 		dispose(true);
 	}
 
+	private void drawScene(Scene scene){
+		for (Figure f : scene.figures)
+			drawFigure(f);
+	}
+
 	private void drawFigure(Figure f){
 
-		if (!f.isVisisble)
+		if (!f.isVisible)
 			return;
 
 		if (f instanceof Tile)
@@ -815,19 +736,33 @@ public class RunnerGame extends ApplicationAdapter {
 		}
 	}
 
-    private void  drawTextFigure(TextFigure f){
+    private void drawTextFigure(TextFigure f){
         regularFont.draw(batch, f.text, f.boundingBox.x, f.boundingBox.y + f.boundingBox.height);
     }
 
 	private void soundOn(){
 		soundManager.on();
-		prefs.putBoolean("soundoff", false);
-		prefs.flush();
+		try {
+			prefs.putBoolean("soundoff", false);
+			prefs.flush();
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
 	}
 
 	private void soundOff(){
 		soundManager.off();
-		prefs.putBoolean("soundoff", true);
-		prefs.flush();
+		try {
+			prefs.putBoolean("soundoff", true);
+			prefs.flush();
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+
+	private void centerFigureHorizontally(Figure f){
+		f.boundingBox.x = (viewportWidth - f.boundingBox.width) / 2;
 	}
 }

@@ -139,7 +139,7 @@ public class AndroidLauncher extends AndroidApplication implements IAdsControlle
 					// инициировать вход пользователя. Может быть вызван диалог
 					// входа. Выполняется в UI-потоке
 					try{
-						gameHelper. beginUserInitiatedSignIn();
+						gameHelper.beginUserInitiatedSignIn();
 					}
 					catch (Exception e){
 						e.printStackTrace();
