@@ -23,6 +23,7 @@ public class RunnerGame extends ApplicationAdapter {
 	SpriteBatch batch;
 	OrthographicCamera camera;
 	ShapeRenderer shapeRenderer;
+	Renderer renderer;
 	BitmapFont regularFont;
 	GlyphLayout glyphLayout;
     SoundManager soundManager;
@@ -114,6 +115,8 @@ public class RunnerGame extends ApplicationAdapter {
 		batch = new SpriteBatch();
 		shapeRenderer = new ShapeRenderer();
 
+		renderer = new Renderer(batch);
+
 		// Create figures.
 		particles = createParticles();
 
@@ -187,7 +190,7 @@ public class RunnerGame extends ApplicationAdapter {
 
 		batch.draw(gameAssets.textures.get("background"), 0, 0, viewportWidth, viewportHeight);
 
-		drawScene(currentScene);
+		renderer.drawScene(currentScene);
 
 		if (inGame) {
 			drawScore();
@@ -725,39 +728,6 @@ public class RunnerGame extends ApplicationAdapter {
 	void disposeNoSounds(){
 		dispose(true);
 	}
-
-	private void drawScene(Scene scene){
-		for (Figure f : scene.figures)
-			drawFigure(f);
-	}
-
-	private void drawFigure(Figure f){
-
-		if (!f.isVisible)
-			return;
-
-		if (f instanceof Tile)
-			drawTile((Tile) f);
-		else if (f instanceof Sprite)
-			drawSprite((Sprite)f);
-        else if (f instanceof TextFigure)
-            drawTextFigure((TextFigure)f);
-	}
-
-	private void drawSprite(Sprite s){
-		batch.draw(s.texture, s.boundingBox.x, s.boundingBox.y, s.boundingBox.width, s.boundingBox.height);
-	}
-
-	private void drawTile(Tile t){
-		float tileWidth = t.get_tileWidth();
-		for (double k = 0, x = t.boundingBox.x; k <  t.countH; k++, x += tileWidth) {
-			batch.draw(t.texture, (int) x, t.boundingBox.y, tileWidth, t.boundingBox.height);
-		}
-	}
-
-    private void drawTextFigure(TextFigure f){
-        regularFont.draw(batch, f.text, f.boundingBox.x, f.boundingBox.y + f.boundingBox.height);
-    }
 
 	private void soundOn(){
 		soundManager.on();
