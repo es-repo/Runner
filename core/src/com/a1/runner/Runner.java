@@ -4,11 +4,13 @@ import com.badlogic.gdx.graphics.Texture;
 
 public class Runner extends Sprite {
 
+    public static int size = 24;
+
     SoundManager soundManager;
-    public float initSpeed = 7f;
+    public float initSpeed = 4f;
     public float speed = initSpeed;
-    public float gravyAcc = -0.7f;
-    public float jumpAcc = 11.5f;
+    public float gravyAcc = -0.35f;
+    public float jumpAcc = 5.525f;
     public int gatheredCoins = 0;
 
     private Texture[] textures;

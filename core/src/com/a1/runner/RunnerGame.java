@@ -13,12 +13,11 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector3;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class RunnerGame extends ApplicationAdapter {
 
-	int viewportWidth = 800;
-	int viewportHeight = 480;
+	int viewportWidth = 400;
+	int viewportHeight = 240;
 
 	static GameAssets gameAssets;
 	SpriteBatch batch;
@@ -29,36 +28,29 @@ public class RunnerGame extends ApplicationAdapter {
     SoundManager soundManager;
     Preferences prefs;
 
-    float iconSize = 48;
-	float padding = 20;
+    float iconSize = 24;
+	float padding = 10;
 
-	int wallTileSize = 32;
-	int wallsMaxDistance = this.wallTileSize * 8;
-	float wallsMinDistance = this.wallTileSize * 1.5f;
-	int wallsMaxTilesCount = 12;
-	int wallsMinTilesCount = 3;
-	int wallUpdatePosX = -this.wallTileSize * 15;
-	int levelPadding = wallTileSize;
+	int wallUpdatePosX = -Wall.tileSize * 15;
+	int levelPadding = Wall.tileSize;
 	ArrayList[] walls;
 	Runner runner;
 
-	int level2 = 25;
-	int level3 = 50;
-	int level4 = 75;
-	int level5 = 100;
+	int level2 = 10;//25;
+	int level3 = 20;//50;
+	int level4 = 30;//75;
+	int level5 = 40;//100;
 
     int bestScore;
 	boolean soundOff;
 
 	long ticks;
 
-    int coinsCount = 6;
-	float supercoinSize = 40;
-	float coinSize = 32;
+    int coinsCount = 6;	
     ArrayList<Coin> coins;
 	ArrayList<Coin> availableCoins;
 
-	int particlesCount = 100;
+	int particlesCount = 0;
     ArrayList<Particle> particles;
 
 	ArrayList<Figure> touchedFigures = new ArrayList<Figure>();
@@ -92,7 +84,6 @@ public class RunnerGame extends ApplicationAdapter {
 	
 	@Override
 	public void create () {
-		// TODO: rearange coins to not overlap
 		// TODO: set ads
 		// TODO: rating
 		// TODO: credits
@@ -113,7 +104,7 @@ public class RunnerGame extends ApplicationAdapter {
 			soundManager.off();
 
 		regularFont = new BitmapFont(Gdx.files.internal("fonts/vermin_vibes_1989.fnt"));
-		regularFont.getData().scale(0.5f);
+		//regularFont.getData().scale(0.25f);
 		regularFont.setColor(com.badlogic.gdx.graphics.Color.WHITE);
 		glyphLayout = new GlyphLayout();
 
@@ -135,7 +126,7 @@ public class RunnerGame extends ApplicationAdapter {
 		coins = createCoins();
 		availableCoins = new ArrayList<Coin>();
 
-		ArrayList<Figure> soundOnOffIcons = createSoundOfIcons();
+		ArrayList<Figure> soundOnOffIcons = createSoundOnOffIcons();
 
 		menuScene = new Scene();
 		menuScene.figures.addAll(particles);
@@ -194,7 +185,9 @@ public class RunnerGame extends ApplicationAdapter {
 		batch.setProjectionMatrix(camera.combined);
 		batch.begin();
 
-        drawScene(currentScene);
+		batch.draw(gameAssets.textures.get("background"), 0, 0, viewportWidth, viewportHeight);
+
+		drawScene(currentScene);
 
 		if (inGame) {
 			drawScore();
@@ -218,9 +211,12 @@ public class RunnerGame extends ApplicationAdapter {
 	private ArrayList<Button> createMenuButtons() {
 		ArrayList<Button> buttons = new ArrayList<Button>();
 
+		float buttonWidth = viewportWidth / 2.2f;
+		float buttonHeight = viewportHeight / 8f;
+
 		Button startButton = new Button(gameAssets.textures.get("buttons.start"), gameAssets.textures.get("buttons.start_pressed"));
-		startButton.boundingBox.width = 360;
-		startButton.boundingBox.height = 64;
+		startButton.boundingBox.width = buttonWidth;
+		startButton.boundingBox.height = buttonHeight;
 		startButton.boundingBox.y = viewportHeight / 2 - startButton.boundingBox.height;
 		centerFigureHorizontally(startButton);
 		startButton.setClickHandler(new ClickHandler() {
@@ -240,8 +236,8 @@ public class RunnerGame extends ApplicationAdapter {
 
 		if (gameServicesEnabled) {
 			Button topScoresButton = new Button(gameAssets.textures.get("buttons.topscores"), gameAssets.textures.get("buttons.topscores_pressed"));
-			topScoresButton.boundingBox.width = 360;
-			topScoresButton.boundingBox.height = 64;
+			topScoresButton.boundingBox.width = buttonWidth;
+			topScoresButton.boundingBox.height = buttonHeight;
 			topScoresButton.boundingBox.y = startButton.boundingBox.y - startButton.boundingBox.height * 1.2f;
 			centerFigureHorizontally(topScoresButton);
 			topScoresButton.setClickHandler(new ClickHandler() {
@@ -280,7 +276,7 @@ public class RunnerGame extends ApplicationAdapter {
 		});
 		icons.add(pause);
 
-		float playSize = 96;
+		float playSize = iconSize * 2;
 		play.texture = gameAssets.textures.get("play");
 		play.boundingBox.width = play.boundingBox.height = playSize;
 		play.boundingBox.x = (viewportWidth - playSize) / 2;
@@ -300,7 +296,7 @@ public class RunnerGame extends ApplicationAdapter {
 		return icons;
 	}
 
-	private ArrayList<Figure> createSoundOfIcons(){
+	private ArrayList<Figure> createSoundOnOffIcons(){
 		ArrayList<Figure> icons = new ArrayList<Figure>();
 
 		final Sprite on = new Sprite();
@@ -347,11 +343,11 @@ public class RunnerGame extends ApplicationAdapter {
 			for (int i = 0; i < count; i++) {
 				Wall w = new Wall();
 				w.texture = gameAssets.textures.get("tile");
-				w.countH = 3;
-				w.boundingBox.width = this.wallTileSize * w.countH;
-				w.boundingBox.height = this.wallTileSize;
+				w.countH = Wall.minTilesCount;
+				w.boundingBox.width = Wall.tileSize * w.countH;
+				w.boundingBox.height = Wall.tileSize;
 				w.boundingBox.x = this.wallUpdatePosX;
-				w.boundingBox.y = this.wallTileSize * 3 * l + levelPadding;
+				w.boundingBox.y = Wall.tileSize * 3 * l + levelPadding;
 				walls[l].add(w);
 			}
 		}
@@ -370,9 +366,9 @@ public class RunnerGame extends ApplicationAdapter {
 			Wall lw = (Wall)walls.get(walls.size() - 1);
 
 			if (w.boundingBox.x <= this.wallUpdatePosX) {
-				w.countH = (int)(this.wallsMinTilesCount + Math.random() * this.wallsMaxTilesCount);
-				w.boundingBox.x = (int)(lw.boundingBox.x + lw.boundingBox.width + this.wallsMinDistance + Math.random() * this.wallsMaxDistance);
-				w.boundingBox.width = this.wallTileSize * w.countH;
+				w.countH = (int)(Wall.minTilesCount + Math.random() * Wall.maxTilesCount);
+				w.boundingBox.x = (int)(lw.boundingBox.x + lw.boundingBox.width + Wall.minDistance + Math.random() * Wall.maxDistance);
+				w.boundingBox.width = Wall.tileSize * w.countH;
 				String tn = "tile";
 				if (runner.gatheredCoins >= level2)
 					tn = "tile2";
@@ -399,8 +395,8 @@ public class RunnerGame extends ApplicationAdapter {
 				gameAssets.textures.get("runner3"),
 				gameAssets.textures.get("runner2")};
 		Runner r = new Runner(textures, soundManager);
-		r.boundingBox.width = this.wallTileSize * 1.5f;
-		r.boundingBox.height = this.wallTileSize * 1.5f;
+		r.boundingBox.width = Runner.size;
+		r.boundingBox.height = Runner.size;
 		r.boundingBox.x = this.wallUpdatePosX;
         return r;
 	}
@@ -418,14 +414,14 @@ public class RunnerGame extends ApplicationAdapter {
         for (int i = 0; i < coinsCount; i++) {
             Coin c = new Coin();
 			c.texture = gameAssets.textures.get("coin");
-            c.boundingBox.width = coinSize;
-            c.boundingBox.height = coinSize;
+            c.boundingBox.width = Coin.size;
+            c.boundingBox.height = Coin.size;
 			c.boundingBox.x = wallUpdatePosX;
             c.sound = gameAssets.sounds.get("coin");
             coins.add(c);
         }
         Coin superCoin = coins.get(coinsCount - 1);
-        superCoin.boundingBox.height = superCoin.boundingBox.width = supercoinSize;
+        superCoin.boundingBox.height = superCoin.boundingBox.width = Coin.superSize;
         superCoin.isSuper = true;
         superCoin.texture = gameAssets.textures.get("supercoin");
         return coins;
@@ -460,11 +456,11 @@ public class RunnerGame extends ApplicationAdapter {
     }
 
 	private float getCoinRandomPosition(Wall w){
-		int s = (int)(w.boundingBox.width / supercoinSize);
+		int s = (int)(w.boundingBox.width / Coin.superSize);
 		for (int i = 0; i < s; i++){
 			int p = (int)(Math.random() * s);
-			float x = w.boundingBox.x + p * supercoinSize + coinSize / 2;
-			float y = w.boundingBox.y + w.boundingBox.height + coinSize / 2;
+			float x = w.boundingBox.x + p * Coin.superSize + Coin.size / 2;
+			float y = w.boundingBox.y + w.boundingBox.height + Coin.size / 2;
 			boolean positionIsFree = true;
 			for (Coin c : coins){
 				if (c.boundingBox.contains(x, y)) {
@@ -473,7 +469,7 @@ public class RunnerGame extends ApplicationAdapter {
 				}
 			}
 			if (positionIsFree)
-				return w.boundingBox.x + p * supercoinSize;
+				return w.boundingBox.x + p * Coin.superSize;
 
 		}
 		return wallUpdatePosX;
@@ -544,7 +540,9 @@ public class RunnerGame extends ApplicationAdapter {
                 viewportHeight / 2 + (viewportHeight / 2 - glyphLayout.height) / 2 + glyphLayout.height);
         regularFont.getData().setScale(sx, sy);
 
-        glyphLayout.setText(regularFont, "score: 9999");
+		String best = String.valueOf(bestScore);
+
+        glyphLayout.setText(regularFont, "your best: " + best);
         float xs = (viewportWidth - glyphLayout.width) / 2;
         float xe = (viewportWidth + glyphLayout.width) / 2;
 
@@ -556,9 +554,8 @@ public class RunnerGame extends ApplicationAdapter {
         regularFont.draw(batch, glyphLayout, xe - glyphLayout.width, y);
 
         y -=  glyphLayout.height * 1.5;
-        glyphLayout.setText(regularFont, "best:");
+        glyphLayout.setText(regularFont, "your best:");
         regularFont.draw(batch, glyphLayout, xs, y);
-        String best = String.valueOf(bestScore);
         glyphLayout.setText(regularFont, best);
         regularFont.draw(batch, glyphLayout, xe - glyphLayout.width, y);
     }
@@ -624,7 +621,7 @@ public class RunnerGame extends ApplicationAdapter {
 			}
 
 			runner.speed = runner.initSpeed;
-			float speedDelta = 0.5f;
+			float speedDelta = 0.25f;
 			if (runner.gatheredCoins >= level2)
 				runner.speed = runner.initSpeed + speedDelta;
 			if (runner.gatheredCoins >= level3)

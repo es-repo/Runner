@@ -35,6 +35,7 @@ public class GameAssets {
 
     public void loadAssets(boolean noSounds){
         HashMap<String, String> textures = new HashMap<String, String>();
+        textures.put("background", "background.png");
         textures.put("coin", "coin.png");
         textures.put("supercoin", "supercoin.png");
         textures.put("runner1", "runner1.png");
