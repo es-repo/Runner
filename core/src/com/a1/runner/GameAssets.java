@@ -46,22 +46,21 @@ public class GameAssets {
         textures.put("platform.2.top_left", "platform/2/top_left.png");
         textures.put("platform.2.top_right", "platform/2/top_right.png");
 
-        textures.put("platform.1.topl0", "platform/1/topl0.png");
-        textures.put("platform.1.topl1", "platform/1/topl1.png");
-        textures.put("platform.1.topl2", "platform/1/topl2.png");
-        textures.put("platform.1.topl3", "platform/1/topl3.png");
+        for (int i = 0; i < 4; i++){
+            String si = "_" + String.valueOf(i);
+            textures.put("platform.1.top" + si, "platform/1/top" + si + ".png");
+            textures.put("platform.1.top_left" + si, "platform/1/top_left" + si + ".png");
+            textures.put("platform.1.top_right" + si, "platform/1/top_right" + si + ".png");
 
-        textures.put("platform.1.bottoml0", "platform/1/bottoml0.png");
-        textures.put("platform.1.bottoml1", "platform/1/bottoml1.png");
-        textures.put("platform.1.bottoml2", "platform/1/bottoml2.png");
-        textures.put("platform.1.bottoml3", "platform/1/bottoml3.png");
+            textures.put("platform.1.bottom" + si, "platform/1/bottom" + si + ".png");
+            textures.put("platform.1.bottom_left" + si, "platform/1/bottom_left" + si + ".png");
+            textures.put("platform.1.bottom_right" + si, "platform/1/bottom_right" + si + ".png");
+        }
 
-//        textures.put("tile", "tile.png");
-//        textures.put("tile_bottom", "tile_bottom.png");
-//        textures.put("tile2", "tile2.png");
-//        textures.put("tile3", "tile3.png");
-//        textures.put("tile4", "tile4.png");
-//        textures.put("tile5", "tile5.png");
+//        textures.put("platform.1.bottoml0", "platform/1/bottoml0.png");
+//        textures.put("platform.1.bottoml1", "platform/1/bottoml1.png");
+//        textures.put("platform.1.bottoml2", "platform/1/bottoml2.png");
+//        textures.put("platform.1.bottoml3", "platform/1/bottoml3.png");
 
         textures.put("particle", "particle.png");
         textures.put("pause", "pause.png");

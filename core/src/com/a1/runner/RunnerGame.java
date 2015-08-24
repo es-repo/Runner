@@ -195,7 +195,7 @@ public class RunnerGame extends ApplicationAdapter {
 		batch.setProjectionMatrix(camera.combined);
 		batch.begin();
 
-//		Platform p = new Platform(gameAssets, -1);
+//		Platform p = new Platform(gameAssets, 2);
 //		p.boundingBox.x = 100;
 //		p.boundingBox.y = 100;
 //		renderer.drawFigure(p);
@@ -350,7 +350,7 @@ public class RunnerGame extends ApplicationAdapter {
 		for (int l = 0; l < levels; l++) {
 			platforms[l] = new ArrayList();
 			for (int i = 0; i < count; i++) {
-				Platform p = new Platform(gameAssets, -1);
+				Platform p = new Platform(gameAssets, l);
 				p.boundingBox.x = this.leftSceneEdgePosX;
 				p.boundingBox.y = Platform.blockWidth * 3 * (levels - l - 1) + levelPadding;
 				platforms[l].add(p);

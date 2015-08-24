@@ -10,6 +10,8 @@ public class Tile extends Sprite {
     public Tile(float tileWidth, float tileHeight){
         this.tileWidth = tileWidth;
         this.tileHeight = tileHeight;
+        this.boundingBox.width = tileWidth;
+        this.boundingBox.height = tileHeight;
     }
 
     public int getCountH(){ return countH; }
