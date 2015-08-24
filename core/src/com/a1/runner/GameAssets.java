@@ -42,7 +42,10 @@ public class GameAssets {
         textures.put("runner.step2", "runner/step2.png");
         textures.put("runner.step3", "runner/step3.png");
 
-        textures.put("platform.1.top", "platform/1/top.png");
+        textures.put("platform.2.top", "platform/2/top.png");
+        textures.put("platform.2.top_left", "platform/2/top_left.png");
+        textures.put("platform.2.top_right", "platform/2/top_right.png");
+
         textures.put("platform.1.topl0", "platform/1/topl0.png");
         textures.put("platform.1.topl1", "platform/1/topl1.png");
         textures.put("platform.1.topl2", "platform/1/topl2.png");

@@ -25,9 +25,7 @@ public class Renderer {
 
         if (f instanceof ComposedFigure){
             for (Figure pf : ((ComposedFigure) f).figures) {
-                x = x + pf.boundingBox.x;
-                y = y + pf.boundingBox.y;
-                drawFigure(pf, x, y);
+                drawFigure(pf, x + pf.boundingBox.x, y + pf.boundingBox.y);
             }
         }
         else if (f instanceof Tile)

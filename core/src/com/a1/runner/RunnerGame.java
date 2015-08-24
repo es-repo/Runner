@@ -22,7 +22,6 @@ public class RunnerGame extends ApplicationAdapter {
 	static GameAssets gameAssets;
 	SpriteBatch batch;
 	OrthographicCamera camera;
-	ShapeRenderer shapeRenderer;
 	Renderer renderer;
 	BitmapFont regularFont;
 	GlyphLayout glyphLayout;
@@ -86,7 +85,7 @@ public class RunnerGame extends ApplicationAdapter {
 	
 	@Override
 	public void create () {
-		// TODO: preformance
+		// TODO: performance
 		// TODO: dont jump from the edge of the platform
 		// TODO: runner falling from the top goes through bottom platform
 		// TODO: sometimes the game slowdowns. looks like because of sounds or GC.
@@ -118,7 +117,6 @@ public class RunnerGame extends ApplicationAdapter {
 		camera = new OrthographicCamera();
 		camera.setToOrtho(false, viewportWidth, viewportHeight);
 		batch = new SpriteBatch();
-		shapeRenderer = new ShapeRenderer();
 
 		renderer = new Renderer(batch);
 
@@ -197,6 +195,11 @@ public class RunnerGame extends ApplicationAdapter {
 		batch.setProjectionMatrix(camera.combined);
 		batch.begin();
 
+//		Platform p = new Platform(gameAssets, -1);
+//		p.boundingBox.x = 100;
+//		p.boundingBox.y = 100;
+//		renderer.drawFigure(p);
+
 		renderer.drawScene(currentScene);
 
 		if (inGame) {
@@ -210,10 +213,6 @@ public class RunnerGame extends ApplicationAdapter {
 		}
 
 		batch.end();
-
-		shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-		shapeRenderer.setProjectionMatrix(camera.combined);
-		shapeRenderer.end();
 
 		ticks++;
 	}
@@ -351,7 +350,7 @@ public class RunnerGame extends ApplicationAdapter {
 		for (int l = 0; l < levels; l++) {
 			platforms[l] = new ArrayList();
 			for (int i = 0; i < count; i++) {
-				Platform p = new Platform(gameAssets, l);
+				Platform p = new Platform(gameAssets, -1);
 				p.boundingBox.x = this.leftSceneEdgePosX;
 				p.boundingBox.y = Platform.blockWidth * 3 * (levels - l - 1) + levelPadding;
 				platforms[l].add(p);
