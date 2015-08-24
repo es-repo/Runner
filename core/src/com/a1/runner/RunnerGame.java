@@ -32,10 +32,11 @@ public class RunnerGame extends ApplicationAdapter {
     float iconSize = 24;
 	float padding = 10;
 
-	int wallUpdatePosX = -Wall.tileSize * 15;
-	int levelPadding = Wall.tileSize;
-	ArrayList[] walls;
+	int leftSceneEdgePosX = -Platform.blockWidth * 15;
+	int levelPadding = Platform.blockWidth;
+	ArrayList[] platforms;
 	Runner runner;
+	Background background;
 
 	int level2 = 10;//25;
 	int level3 = 20;//50;
@@ -85,6 +86,10 @@ public class RunnerGame extends ApplicationAdapter {
 	
 	@Override
 	public void create () {
+		// TODO: preformance
+		// TODO: dont jump from the edge of the platform
+		// TODO: runner falling from the top goes through bottom platform
+		// TODO: sometimes the game slowdowns. looks like because of sounds or GC.
 		// TODO: set ads
 		// TODO: rating
 		// TODO: credits
@@ -118,13 +123,14 @@ public class RunnerGame extends ApplicationAdapter {
 		renderer = new Renderer(batch);
 
 		// Create figures.
+		background = new Background(gameAssets, viewportWidth, viewportHeight);
 		particles = createParticles();
 
 		runner = createRunner();
 		initRunner(runner);
 
-		walls = createWalls();
-		rearrangeWalls();
+		platforms = createPlatforms();
+		rearrangePlatforms();
 
 		coins = createCoins();
 		availableCoins = new ArrayList<Coin>();
@@ -132,20 +138,23 @@ public class RunnerGame extends ApplicationAdapter {
 		ArrayList<Figure> soundOnOffIcons = createSoundOnOffIcons();
 
 		menuScene = new Scene();
+		menuScene.figures.add(background);
 		menuScene.figures.addAll(particles);
 		menuScene.figures.addAll(createMenuButtons());
 		menuScene.figures.addAll(soundOnOffIcons);
 
 		gameScene = new Scene();
+		gameScene.figures.add(background);
 		gameScene.figures.addAll(particles);
-		for (ArrayList wallsLevel : walls)
-			gameScene.figures.addAll(wallsLevel);
+		for (ArrayList platformsLevel : platforms)
+			gameScene.figures.addAll(platformsLevel);
 		gameScene.figures.addAll(coins);
 		gameScene.figures.add(runner);
 		gameScene.figures.addAll(createPausePlayIcons());
 		gameScene.figures.addAll(soundOnOffIcons);
 
 		gameOverScene = new Scene();
+		gameOverScene.figures.add(background);
 		gameOverScene.figures.addAll(particles);
 		gameOverScene.figures.addAll(soundOnOffIcons);
 
@@ -188,8 +197,6 @@ public class RunnerGame extends ApplicationAdapter {
 		batch.setProjectionMatrix(camera.combined);
 		batch.begin();
 
-		batch.draw(gameAssets.textures.get("background"), 0, 0, viewportWidth, viewportHeight);
-
 		renderer.drawScene(currentScene);
 
 		if (inGame) {
@@ -228,8 +235,8 @@ public class RunnerGame extends ApplicationAdapter {
 				inMenu = false;
 				inGame = true;
 				initRunner(runner);
-				initWallsAndCoinsPositions();
-				rearrangeWalls();
+				initPlatformsAndCoinsPositions();
+				rearrangePlatforms();
 				rearrangeCoins();
 				currentScene = gameScene;
 				soundManager.playMusic();
@@ -337,53 +344,50 @@ public class RunnerGame extends ApplicationAdapter {
 		return icons;
 	}
 
-	private ArrayList[] createWalls(){
+	private ArrayList[] createPlatforms(){
 		int levels = 4;
 		int count = 7;
-		ArrayList[] walls = new ArrayList[levels];
+		ArrayList[] platforms = new ArrayList[levels];
 		for (int l = 0; l < levels; l++) {
-			walls[l] = new ArrayList();
+			platforms[l] = new ArrayList();
 			for (int i = 0; i < count; i++) {
-				Wall w = new Wall();
-				w.texture = gameAssets.textures.get("tile");
-				w.countH = Wall.minTilesCount;
-				w.boundingBox.width = Wall.tileSize * w.countH;
-				w.boundingBox.height = Wall.tileSize;
-				w.boundingBox.x = this.wallUpdatePosX;
-				w.boundingBox.y = Wall.tileSize * 3 * l + levelPadding;
-				walls[l].add(w);
+				Platform p = new Platform(gameAssets, l);
+				p.boundingBox.x = this.leftSceneEdgePosX;
+				p.boundingBox.y = Platform.blockWidth * 3 * (levels - l - 1) + levelPadding;
+				platforms[l].add(p);
 			}
 		}
-		return walls;
+		return platforms;
 	}
 
-	private void rearrangeWalls() {
-		for (int i = 0; i < walls.length; i++) {
-			this.rearrangeWallsLevel(walls[i]);
+	private void rearrangePlatforms() {
+		for (int i = 0; i < platforms.length; i++) {
+			this.rearrangePlatformsLevel(platforms[i]);
 		}
 	}
 
-	private void rearrangeWallsLevel(ArrayList walls) {
+	private void rearrangePlatformsLevel(ArrayList platforms) {
 		while (true) {
-			Wall w = (Wall)walls.get(0);
-			Wall lw = (Wall)walls.get(walls.size() - 1);
+			Platform p = (Platform)platforms.get(0);
+			Platform lastp = (Platform)platforms.get(platforms.size() - 1);
 
-			if (w.boundingBox.x <= this.wallUpdatePosX) {
-				w.countH = (int)(Wall.minTilesCount + Math.random() * Wall.maxTilesCount);
-				w.boundingBox.x = (int)(lw.boundingBox.x + lw.boundingBox.width + Wall.minDistance + Math.random() * Wall.maxDistance);
-				w.boundingBox.width = Wall.tileSize * w.countH;
-				String tn = "tile";
-				if (runner.gatheredCoins >= level2)
-					tn = "tile2";
-				if (runner.gatheredCoins >= level3)
-					tn = "tile3";
-				if (runner.gatheredCoins >= level4)
-					tn = "tile4";
-				if (runner.gatheredCoins >= level5)
-					tn = "tile5";
-                w.texture = gameAssets.textures.get(tn);
-				walls.remove(0);
-				walls.add(w);
+			if (p.boundingBox.x <= this.leftSceneEdgePosX) {
+				int blocksCount = (int)(Platform.minBlocksCount + Math.random() * Platform.maxBlocksCount);
+				p.setBlocksCount(blocksCount);
+				p.boundingBox.x = (int)(lastp.boundingBox.x + lastp.boundingBox.width + Platform.minDistance + Math.random() * Platform.maxDistance);
+				p.boundingBox.width = Platform.blockWidth * blocksCount;
+//				String tn = "tile";
+//				if (runner.gatheredCoins >= level2)
+//					tn = "tile2";
+//				if (runner.gatheredCoins >= level3)
+//					tn = "tile3";
+//				if (runner.gatheredCoins >= level4)
+//					tn = "tile4";
+//				if (runner.gatheredCoins >= level5)
+//					tn = "tile5";
+//                w.texture = gameAssets.textures.get(tn);
+				platforms.remove(0);
+				platforms.add(p);
 			}
 			else {
 				return;
@@ -392,15 +396,8 @@ public class RunnerGame extends ApplicationAdapter {
 	}
 
 	private Runner createRunner(){
-		Texture[] textures = {
-				gameAssets.textures.get("runner1"),
-				gameAssets.textures.get("runner2"),
-				gameAssets.textures.get("runner3"),
-				gameAssets.textures.get("runner2")};
-		Runner r = new Runner(textures, soundManager);
-		r.boundingBox.width = Runner.size;
-		r.boundingBox.height = Runner.size;
-		r.boundingBox.x = this.wallUpdatePosX;
+		Runner r = new Runner(gameAssets, soundManager);
+		r.boundingBox.x = this.leftSceneEdgePosX;
         return r;
 	}
 
@@ -419,7 +416,7 @@ public class RunnerGame extends ApplicationAdapter {
 			c.texture = gameAssets.textures.get("coin");
             c.boundingBox.width = Coin.size;
             c.boundingBox.height = Coin.size;
-			c.boundingBox.x = wallUpdatePosX;
+			c.boundingBox.x = leftSceneEdgePosX;
             c.sound = gameAssets.sounds.get("coin");
             coins.add(c);
         }
@@ -435,12 +432,12 @@ public class RunnerGame extends ApplicationAdapter {
 		availableCoins.clear();
 		for (int i = 0; i < this.coins.size(); i++) {
 			Coin c = this.coins.get(i);
-			if (c.boundingBox.x <= this.wallUpdatePosX) {
+			if (c.boundingBox.x <= this.leftSceneEdgePosX) {
 				availableCoins.add(c);
 			}
 		}
 
-        for (int i = 0; i < this.walls.length; i++) {
+        for (int i = 0; i < this.platforms.length; i++) {
 
             if (availableCoins.size() == 0)
                 break;
@@ -450,20 +447,20 @@ public class RunnerGame extends ApplicationAdapter {
             double probability = 0.5;//coin.isSuper ? 0.0002 : 0.5;
             double v = Math.random();
             if (v < probability) {
-                Wall w = (Wall)this.walls[i].get(this.walls[i].size() - 1);
-				coin.boundingBox.x = getCoinRandomPosition(w); //(float)(w.boundingBox.x + Math.random() * (w.boundingBox.width - coin.boundingBox.width));
-				coin.boundingBox.y = w.boundingBox.y + w.boundingBox.height;
+                Platform p = (Platform)this.platforms[i].get(this.platforms[i].size() - 1);
+				coin.boundingBox.x = getCoinRandomPosition(p); //(float)(w.boundingBox.x + Math.random() * (w.boundingBox.width - coin.boundingBox.width));
+				coin.boundingBox.y = p.boundingBox.y + p.boundingBox.height;
                 availableCoins.remove(coin);
             }
         }
     }
 
-	private float getCoinRandomPosition(Wall w){
-		int s = (int)(w.boundingBox.width / Coin.superSize);
+	private float getCoinRandomPosition(Platform platform){
+		int s = (int)(platform.boundingBox.width / Coin.superSize);
 		for (int i = 0; i < s; i++){
-			int p = (int)(Math.random() * s);
-			float x = w.boundingBox.x + p * Coin.superSize + Coin.size / 2;
-			float y = w.boundingBox.y + w.boundingBox.height + Coin.size / 2;
+			int pos = (int)(Math.random() * s);
+			float x = platform.boundingBox.x + pos * Coin.superSize + Coin.size / 2;
+			float y = platform.boundingBox.y + platform.boundingBox.height + Coin.size / 2;
 			boolean positionIsFree = true;
 			for (Coin c : coins){
 				if (c.boundingBox.contains(x, y)) {
@@ -472,10 +469,10 @@ public class RunnerGame extends ApplicationAdapter {
 				}
 			}
 			if (positionIsFree)
-				return w.boundingBox.x + p * Coin.superSize;
+				return platform.boundingBox.x + pos * Coin.superSize;
 
 		}
-		return wallUpdatePosX;
+		return leftSceneEdgePosX;
 	}
 
     private void takeCoin(){
@@ -483,24 +480,24 @@ public class RunnerGame extends ApplicationAdapter {
             Coin c = this.coins.get(i);
             if (this.runner.isNearCoin(c)) {
                 this.runner.gatheredCoins+= c.isSuper ? 10 : 1;
-				c.boundingBox.x = wallUpdatePosX;
+				c.boundingBox.x = leftSceneEdgePosX;
                 soundManager.playSound("coin", 0.4f);
 				break;
             }
         }
     }
 
-	private void initWallsAndCoinsPositions(){
-		for (int i = 0; i < walls.length; i++){
-			for (int j = 0; j < walls[i].size(); j++){
-				Wall w = (Wall)walls[i].get(j);
-				w.boundingBox.x = wallUpdatePosX;
+	private void initPlatformsAndCoinsPositions(){
+		for (int i = 0; i < platforms.length; i++){
+			for (int j = 0; j < platforms[i].size(); j++){
+				Platform p = (Platform) platforms[i].get(j);
+				p.boundingBox.x = leftSceneEdgePosX;
 			}
 		}
 
 		for (int i = 0; i < coins.size(); i++){
 			Coin c = coins.get(i);
-			c.boundingBox.x = wallUpdatePosX;
+			c.boundingBox.x = leftSceneEdgePosX;
 		}
 	}
 
@@ -510,7 +507,7 @@ public class RunnerGame extends ApplicationAdapter {
             Particle p = new Particle();
             p.texture = gameAssets.textures.get("particle");
             p.boundingBox.height = p.boundingBox.width = 1 + (float)(Math.random() * 5);
-            p.boundingBox.x = (float)(wallUpdatePosX + Math.random() * (-wallUpdatePosX + viewportWidth));
+            p.boundingBox.x = (float)(leftSceneEdgePosX + Math.random() * (-leftSceneEdgePosX + viewportWidth));
             p.boundingBox.y = (float)(Math.random() * viewportHeight);
             p.z = 9 - p.boundingBox.height;
             particles.add(p);
@@ -527,8 +524,8 @@ public class RunnerGame extends ApplicationAdapter {
 	private void drawTitle(){
         float sx = regularFont.getScaleX();
         float sy = regularFont.getScaleX();
-        regularFont.getData().setScale(sx * 3.5f, sy * 3.5f);
-        glyphLayout.setText(regularFont, "RUNNER");
+        regularFont.getData().setScale(sx * 2f, sy * 2f);
+        glyphLayout.setText(regularFont, "ROOF RUNNER");
         regularFont.draw(batch, glyphLayout, (viewportWidth - glyphLayout.width) / 2,
 				viewportHeight / 2 + (viewportHeight / 2 - glyphLayout.height) / 2 + glyphLayout.height);
         regularFont.getData().setScale(sx, sy);
@@ -573,18 +570,18 @@ public class RunnerGame extends ApplicationAdapter {
 		for (int i = 0; i < this.particles.size(); i++) {
 			Particle p = this.particles.get(i);
 			p.boundingBox.x -= this.runner.speed / p.z;
-			if (p.boundingBox.x < wallUpdatePosX) {
-				p.boundingBox.x = -wallUpdatePosX + viewportWidth;
+			if (p.boundingBox.x < leftSceneEdgePosX) {
+				p.boundingBox.x = -leftSceneEdgePosX + viewportWidth;
 			}
 		}
 
 		if (this.inGame) {
-			for (int l = 0; l < this.walls.length; l++) {
-				for (int i = 0; i < this.walls[l].size(); i++) {
-					Wall w = (Wall)this.walls[l].get(i);
+			for (int l = 0; l < this.platforms.length; l++) {
+				for (int i = 0; i < this.platforms[l].size(); i++) {
+					Platform w = (Platform)this.platforms[l].get(i);
 					w.boundingBox.x -= this.runner.speed;
 				}
-				this.rearrangeWalls();
+				this.rearrangePlatforms();
 			}
 
 			for (int i = 0; i < this.coins.size(); i++) {
@@ -595,25 +592,25 @@ public class RunnerGame extends ApplicationAdapter {
 
 			this.runner.boundingBox.y += this.runner.velocity.y;
 
-			Wall onWall = null;
-			for (int l = 0; l < this.walls.length; l++) {
-				for (int i = 0; i < this.walls[l].size(); i++) {
-					Wall w = (Wall)this.walls[l].get(i);
-					if (this.runner.isOnWall(w)) {
-						onWall = w;
+			Platform onPlatform = null;
+			for (int l = 0; l < this.platforms.length; l++) {
+				for (int i = 0; i < this.platforms[l].size(); i++) {
+					Platform p = (Platform)this.platforms[l].get(i);
+					if (this.runner.isOnPlatform(p)) {
+						onPlatform = p;
 						break;
 					}
 				}
-				if (onWall != null)
+				if (onPlatform != null)
 					break;
 			}
 
-			if (onWall == null) {
+			if (onPlatform == null) {
 				this.runner.velocity.y += this.runner.gravyAcc;
 			} else {
 				if (this.runner.velocity.y < 0) {
 					this.runner.velocity.y = 0;
-					this.runner.boundingBox.y = onWall.boundingBox.y + onWall.boundingBox.height;
+					this.runner.boundingBox.y = onPlatform.boundingBox.y + onPlatform.boundingBox.height;
 				}
 			}
 

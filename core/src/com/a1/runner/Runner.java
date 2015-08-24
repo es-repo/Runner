@@ -16,10 +16,18 @@ public class Runner extends Sprite {
     private Texture[] textures;
     private int currentImageIndex = 0;
 
-    public Runner(Texture[] textures, SoundManager soundManager){
+    public Runner(GameAssets assets, SoundManager soundManager){
+
+        Texture[] textures = {
+                assets.textures.get("runner.step1"),
+                assets.textures.get("runner.step2"),
+                assets.textures.get("runner.step3"),
+                assets.textures.get("runner.step2")};
+        this.textures = textures;
+        boundingBox.width = Runner.size;
+        boundingBox.height = Runner.size;
         texture = textures[0];
         this.soundManager = soundManager;
-        this.textures = textures;
     }
 
     @Override
@@ -54,8 +62,8 @@ public class Runner extends Sprite {
         return this.velocity.y != 0;
     }
 
-    public boolean isOnWall(Wall wall) {
-        return wall.boundingBox.contains(this.boundingBox.x + this.boundingBox.width / 2, this.boundingBox.y);
+    public boolean isOnPlatform(Platform platform) {
+        return platform.boundingBox.contains(this.boundingBox.x + this.boundingBox.width / 2, this.boundingBox.y);
     }
 
     public boolean isNearCoin(Coin coin) {

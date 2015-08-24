@@ -16,34 +16,43 @@ public class Renderer {
     }
 
     public void drawFigure(Figure f){
+        drawFigure(f, f.boundingBox.x, f.boundingBox.y);
+    }
 
+    private void drawFigure(Figure f, float x, float y){
         if (!f.isVisible)
             return;
 
         if (f instanceof ComposedFigure){
-            for (Figure pf : ((ComposedFigure) f).figures)
-                drawFigure(pf);
+            for (Figure pf : ((ComposedFigure) f).figures) {
+                x = x + pf.boundingBox.x;
+                y = y + pf.boundingBox.y;
+                drawFigure(pf, x, y);
+            }
         }
         else if (f instanceof Tile)
-            drawTile((Tile) f);
+            drawTile((Tile) f, x, y);
         else if (f instanceof Sprite)
-            drawSprite((Sprite)f);
+            drawSprite((Sprite)f, x, y);
         else if (f instanceof TextFigure)
-            drawTextFigure((TextFigure)f);
+            drawTextFigure((TextFigure)f, x, y);
     }
 
-    public void drawSprite(Sprite s){
-        batch.draw(s.texture, s.boundingBox.x, s.boundingBox.y, s.boundingBox.width, s.boundingBox.height);
+    private void drawSprite(Sprite s, float x, float y){
+        batch.draw(s.texture, x, y, s.boundingBox.width, s.boundingBox.height);
     }
 
-    public void drawTile(Tile t){
-        float tileWidth = t.get_tileWidth();
-        for (double k = 0, x = t.boundingBox.x; k <  t.countH; k++, x += tileWidth) {
-            batch.draw(t.texture, (int) x, t.boundingBox.y, tileWidth, t.boundingBox.height);
+    private void drawTile(Tile t, float x, float y){
+        float tileWidth = t.getTileWidth();
+        float tileHeight = t.getTileHeight();
+        for (float i = 0; i < t.getCountV(); i++, y -= tileHeight) {
+            for (float j = 0, xj = x; j < t.getCountH(); j++, xj += tileWidth) {
+                batch.draw(t.texture, xj, y, tileWidth, tileHeight);
+            }
         }
     }
 
-    public void drawTextFigure(TextFigure f){
-        f.font.draw(batch, f.text, f.boundingBox.x, f.boundingBox.y + f.boundingBox.height);
+    private void drawTextFigure(TextFigure f, float x, float y){
+        f.font.draw(batch, f.text, x, y + f.boundingBox.height);
     }
 }

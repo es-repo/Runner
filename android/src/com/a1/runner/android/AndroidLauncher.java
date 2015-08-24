@@ -64,11 +64,11 @@ public class AndroidLauncher extends AndroidApplication implements IAdsControlle
 	}
 
 	public void setupAds() {
-		interstitialAd = new InterstitialAd(this);
-		interstitialAd.setAdUnitId(INTERSTITIAL_AD_UNIT_ID);
-		AdRequest.Builder builder = new AdRequest.Builder();
-		AdRequest ad = builder.build();
-		interstitialAd.loadAd(ad);
+//		interstitialAd = new InterstitialAd(this);
+//		interstitialAd.setAdUnitId(INTERSTITIAL_AD_UNIT_ID);
+//		AdRequest.Builder builder = new AdRequest.Builder();
+//		AdRequest ad = builder.build();
+//		interstitialAd.loadAd(ad);
 	}
 
 	private boolean isWifiConnected() {

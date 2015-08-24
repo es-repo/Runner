@@ -35,17 +35,31 @@ public class GameAssets {
 
     public void loadAssets(boolean noSounds){
         HashMap<String, String> textures = new HashMap<String, String>();
-        textures.put("background", "background.png");
+        textures.put("background.main", "background/main.png");
         textures.put("coin", "coin.png");
         textures.put("supercoin", "supercoin.png");
-        textures.put("runner1", "runner1.png");
-        textures.put("runner2", "runner2.png");
-        textures.put("runner3", "runner3.png");
-        textures.put("tile", "tile.png");
-        textures.put("tile2", "tile2.png");
-        textures.put("tile3", "tile3.png");
-        textures.put("tile4", "tile4.png");
-        textures.put("tile5", "tile5.png");
+        textures.put("runner.step1", "runner/step1.png");
+        textures.put("runner.step2", "runner/step2.png");
+        textures.put("runner.step3", "runner/step3.png");
+
+        textures.put("platform.1.top", "platform/1/top.png");
+        textures.put("platform.1.topl0", "platform/1/topl0.png");
+        textures.put("platform.1.topl1", "platform/1/topl1.png");
+        textures.put("platform.1.topl2", "platform/1/topl2.png");
+        textures.put("platform.1.topl3", "platform/1/topl3.png");
+
+        textures.put("platform.1.bottoml0", "platform/1/bottoml0.png");
+        textures.put("platform.1.bottoml1", "platform/1/bottoml1.png");
+        textures.put("platform.1.bottoml2", "platform/1/bottoml2.png");
+        textures.put("platform.1.bottoml3", "platform/1/bottoml3.png");
+
+//        textures.put("tile", "tile.png");
+//        textures.put("tile_bottom", "tile_bottom.png");
+//        textures.put("tile2", "tile2.png");
+//        textures.put("tile3", "tile3.png");
+//        textures.put("tile4", "tile4.png");
+//        textures.put("tile5", "tile5.png");
+
         textures.put("particle", "particle.png");
         textures.put("pause", "pause.png");
         textures.put("play", "play.png");
