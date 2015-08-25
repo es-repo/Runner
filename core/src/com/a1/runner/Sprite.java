@@ -4,4 +4,5 @@ import com.badlogic.gdx.graphics.Texture;
 
 public class Sprite extends Figure {
     public Texture texture;
+    public float brightness = 1f;
 }

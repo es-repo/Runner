@@ -82,7 +82,7 @@ public class Renderer {
     }
 
     private void drawSprite(Sprite s, float x, float y){
-        drawTexture(s.texture, x, y, s.boundingBox.width, s.boundingBox.height);
+        drawTexture(s.texture, x, y, s.boundingBox.width, s.boundingBox.height, s.brightness);
     }
 
     private void drawTile(Tile t, float x, float y){
@@ -92,7 +92,7 @@ public class Renderer {
         int countH = t.getCountH();
         for (float i = 0; i < countV; i++, y -= tileHeight) {
             for (float j = 0, xj = x; j < countH; j++, xj += tileWidth) {
-                drawTexture(t.texture, xj, y, tileWidth, tileHeight);
+                drawTexture(t.texture, xj, y, tileWidth, tileHeight, t.brightness);
             }
         }
     }
@@ -101,10 +101,18 @@ public class Renderer {
         f.font.draw(batch, f.text, x, y + f.boundingBox.height);
     }
 
-    private void drawTexture(Texture t, float x, float y, float width, float height){
+    private void drawTexture(Texture t, float x, float y, float width, float height, float brightness){
         if (x + width < 0 || x >= viewportWidth || y + height < 0 || y >= viewportHeight)
             return;
 
+        if (brightness != 1) {
+            batch.setColor(brightness, brightness, brightness, 1f);
+        }
+
         batch.draw(t, x, y, width, height);
+
+        if (brightness != 1) {
+            batch.setColor(1f, 1f, 1f, 1f);
+        }
     }
 }

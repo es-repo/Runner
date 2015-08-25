@@ -86,6 +86,7 @@ public class RunnerGame extends ApplicationAdapter {
 	@Override
 	public void create () {
 		// TODO: performance
+		// TODO: music disappear after back button.
 		// TODO: dont jump from the edge of the platform
 		// TODO: runner falling from the top goes through bottom platform
 		// TODO: sometimes the game slowdowns. looks like because of sounds or GC.
@@ -352,7 +353,7 @@ public class RunnerGame extends ApplicationAdapter {
 		for (int l = 0; l < levels; l++) {
 			platforms[l] = new ArrayList();
 			for (int i = 0; i < count; i++) {
-				Platform p = new Platform(gameAssets, 0, l);
+				Platform p = new Platform(gameAssets, l);
 				p.boundingBox.x = this.leftSceneEdgePosX;
 				p.boundingBox.y = Platform.blockWidth * 3 * (levels - l - 1) + levelPadding;
 				platforms[l].add(p);
@@ -377,16 +378,16 @@ public class RunnerGame extends ApplicationAdapter {
 				p.setBlocksCount(blocksCount);
 				p.boundingBox.x = (int)(lastp.boundingBox.x + lastp.boundingBox.width + Platform.minDistance + Math.random() * Platform.maxDistance);
 				p.boundingBox.width = Platform.blockWidth * blocksCount;
-//				String tn = "tile";
-//				if (runner.gatheredCoins >= level2)
-//					tn = "tile2";
-//				if (runner.gatheredCoins >= level3)
-//					tn = "tile3";
-//				if (runner.gatheredCoins >= level4)
-//					tn = "tile4";
-//				if (runner.gatheredCoins >= level5)
-//					tn = "tile5";
-//                w.texture = gameAssets.textures.get(tn);
+
+				if (runner.gatheredCoins >= level2)
+					p.setKind(1);
+				if (runner.gatheredCoins >= level3)
+					p.setKind(2);
+				if (runner.gatheredCoins >= level4)
+					p.setKind(3);
+				if (runner.gatheredCoins >= level5)
+					p.setKind(4);
+
 				platforms.remove(0);
 				platforms.add(p);
 			}
@@ -621,8 +622,8 @@ public class RunnerGame extends ApplicationAdapter {
 
 			float bottom = -this.runner.boundingBox.height * 3;
 			if (this.runner.boundingBox.y < bottom) {
-				//this.runner.boundingBox.y = viewportHeight;
-                onGameOver();
+				this.runner.boundingBox.y = viewportHeight;
+                //onGameOver();
 			}
 
 			runner.speed = runner.initSpeed;

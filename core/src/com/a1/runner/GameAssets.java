@@ -42,24 +42,18 @@ public class GameAssets {
         textures.put("runner.step2", "runner/step2.png");
         textures.put("runner.step3", "runner/step3.png");
 
-        for (int j = 0; j < 1; j++) {
-            String sj = String.valueOf(j);
-            for (int i = 0; i < 4; i++) {
-                String si = String.valueOf(i);
-                String path = "platform/" + sj + "/" + si + "/";
-                String id = "platform."  + sj + "." + si + ".";
-
-                textures.put(id + "top", path + "top.png");
-                textures.put(id + "top_left", path + "top_left.png");
-                textures.put(id + "top_right" + si, path + "top_right.png");
-
-                textures.put(id + "bottom", path + "bottom.png");
-                textures.put(id + "bottom_left", path + "bottom_left.png");
-                textures.put(id + "bottom_right" + si, path + "bottom_right.png");
-            }
+        for (int k = 0; k < 5; k++) {
+            String sk = String.valueOf(k);
+            String path = "platform/" + sk + "/";
+            String id = "platform."  + sk + ".";
+            textures.put(id + "top", path + "top.png");
+            textures.put(id + "top_left", path + "top_left.png");
+            textures.put(id + "top_right", path + "top_right.png");
+            textures.put(id + "bottom", path + "bottom.png");
+            textures.put(id + "bottom_left", path + "bottom_left.png");
+            textures.put(id + "bottom_right", path + "bottom_right.png");
         }
 
-        textures.put("particle", "particle.png");
         textures.put("pause", "pause.png");
         textures.put("play", "play.png");
         textures.put("soundon", "soundon.png");
