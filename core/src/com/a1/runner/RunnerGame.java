@@ -52,7 +52,6 @@ public class RunnerGame extends ApplicationAdapter {
 	ArrayList<Coin> availableCoins;
 
 	int particlesCount = 0;
-    ArrayList<Particle> particles;
 
 	ArrayList<Figure> touchedFigures = new ArrayList<Figure>();
 
@@ -123,7 +122,6 @@ public class RunnerGame extends ApplicationAdapter {
 
 		// Create figures.
 		background = new Background(gameAssets, viewportWidth, viewportHeight);
-		particles = createParticles();
 
 		runner = createRunner();
 		initRunner(runner);
@@ -138,13 +136,11 @@ public class RunnerGame extends ApplicationAdapter {
 
 		menuScene = new Scene();
 		menuScene.figures.add(background);
-		menuScene.figures.addAll(particles);
 		menuScene.figures.addAll(createMenuButtons());
 		menuScene.figures.addAll(soundOnOffIcons);
 
 		gameScene = new Scene();
 		gameScene.figures.add(background);
-		gameScene.figures.addAll(particles);
 		for (ArrayList platformsLevel : platforms)
 			gameScene.figures.addAll(platformsLevel);
 		gameScene.figures.addAll(coins);
@@ -154,7 +150,6 @@ public class RunnerGame extends ApplicationAdapter {
 
 		gameOverScene = new Scene();
 		gameOverScene.figures.add(background);
-		gameOverScene.figures.addAll(particles);
 		gameOverScene.figures.addAll(soundOnOffIcons);
 
 		currentScene = menuScene;
@@ -503,20 +498,6 @@ public class RunnerGame extends ApplicationAdapter {
 		}
 	}
 
-    private ArrayList<Particle> createParticles(){
-        ArrayList<Particle> particles = new ArrayList<Particle>();
-        for (int i = 0; i < particlesCount; i++) {
-            Particle p = new Particle();
-            p.texture = gameAssets.textures.get("particle");
-            p.boundingBox.height = p.boundingBox.width = 1 + (float)(Math.random() * 5);
-            p.boundingBox.x = (float)(leftSceneEdgePosX + Math.random() * (-leftSceneEdgePosX + viewportWidth));
-            p.boundingBox.y = (float)(Math.random() * viewportHeight);
-            p.z = 9 - p.boundingBox.height;
-            particles.add(p);
-        }
-        return particles;
-    }
-
 	private void drawScore(){
 		if (runner.gatheredCoins != score){
 			score = runner.gatheredCoins;
@@ -572,14 +553,6 @@ public class RunnerGame extends ApplicationAdapter {
 			return;
 
 		currentScene.tick(ticks);
-
-		for (int i = 0; i < this.particles.size(); i++) {
-			Particle p = this.particles.get(i);
-			p.boundingBox.x -= this.runner.speed / p.z;
-			if (p.boundingBox.x < leftSceneEdgePosX) {
-				p.boundingBox.x = -leftSceneEdgePosX + viewportWidth;
-			}
-		}
 
 		if (this.inGame) {
 			for (int l = 0; l < this.platforms.length; l++) {
