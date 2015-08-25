@@ -5,11 +5,9 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector3;
 
 import java.util.ArrayList;
@@ -42,6 +40,8 @@ public class RunnerGame extends ApplicationAdapter {
 	int level4 = 30;//75;
 	int level5 = 40;//100;
 
+	int score;
+	String scoreString;
     int bestScore;
 	boolean soundOff;
 
@@ -118,7 +118,7 @@ public class RunnerGame extends ApplicationAdapter {
 		camera.setToOrtho(false, viewportWidth, viewportHeight);
 		batch = new SpriteBatch();
 
-		renderer = new Renderer(batch);
+		renderer = new Renderer(batch, viewportWidth, viewportHeight);
 
 		// Create figures.
 		background = new Background(gameAssets, viewportWidth, viewportHeight);
@@ -233,6 +233,8 @@ public class RunnerGame extends ApplicationAdapter {
 			public void action() {
 				inMenu = false;
 				inGame = true;
+				score = 0;
+				scoreString = "0";
 				initRunner(runner);
 				initPlatformsAndCoinsPositions();
 				rearrangePlatforms();
@@ -461,8 +463,8 @@ public class RunnerGame extends ApplicationAdapter {
 			float x = platform.boundingBox.x + pos * Coin.superSize + Coin.size / 2;
 			float y = platform.boundingBox.y + platform.boundingBox.height + Coin.size / 2;
 			boolean positionIsFree = true;
-			for (Coin c : coins){
-				if (c.boundingBox.contains(x, y)) {
+			for (int j = 0; j < coins.size(); j++){
+				if (coins.get(j).boundingBox.contains(x, y)) {
 					positionIsFree = false;
 					break;
 				}
@@ -515,8 +517,11 @@ public class RunnerGame extends ApplicationAdapter {
     }
 
 	private void drawScore(){
-		String score = String.valueOf(runner.gatheredCoins);
-		glyphLayout.setText(regularFont, score);
+		if (runner.gatheredCoins != score){
+			score = runner.gatheredCoins;
+			scoreString = String.valueOf(runner.gatheredCoins);
+		}
+		glyphLayout.setText(regularFont, scoreString);
 		regularFont.draw(batch, glyphLayout, (viewportWidth - glyphLayout.width) / 2, viewportHeight - padding);
 	}
 
@@ -531,6 +536,7 @@ public class RunnerGame extends ApplicationAdapter {
 	}
 
 	private void drawGameOver(){
+		// TODO: fix objects allocation.
         float sx = regularFont.getScaleX();
         float sy = regularFont.getScaleX();
         regularFont.getData().setScale(sx * 2, sy * 2);

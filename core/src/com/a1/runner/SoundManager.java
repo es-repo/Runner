@@ -69,7 +69,6 @@ public class SoundManager {
     }
 
     public void pauseMusic(){
-
         music.pause();
     }
 }

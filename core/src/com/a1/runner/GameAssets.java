@@ -57,11 +57,6 @@ public class GameAssets {
             textures.put("platform.1.bottom_right" + si, "platform/1/bottom_right" + si + ".png");
         }
 
-//        textures.put("platform.1.bottoml0", "platform/1/bottoml0.png");
-//        textures.put("platform.1.bottoml1", "platform/1/bottoml1.png");
-//        textures.put("platform.1.bottoml2", "platform/1/bottoml2.png");
-//        textures.put("platform.1.bottoml3", "platform/1/bottoml3.png");
-
         textures.put("particle", "particle.png");
         textures.put("pause", "pause.png");
         textures.put("play", "play.png");
