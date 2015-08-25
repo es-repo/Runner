@@ -33,7 +33,8 @@ public class RunnerGame extends ApplicationAdapter {
 	int levelPadding = Platform.blockWidth;
 	ArrayList[] platforms;
 	Runner runner;
-	Background background;
+	Background backgroundTop;
+	Background backgroundBottom;
 
 	int level2 = 10;//25;
 	int level3 = 20;//50;
@@ -91,7 +92,7 @@ public class RunnerGame extends ApplicationAdapter {
 		// TODO: sometimes the game slowdowns. looks like because of sounds or GC.
 		// TODO: set ads
 		// TODO: rating
-		// TODO: credits
+		// TODO: pers 3rd frame shift 1 pixel head.
 		lastAdsShowingTime = (int)(System.currentTimeMillis() / 1000);
 
 		initPrefs();
@@ -121,7 +122,10 @@ public class RunnerGame extends ApplicationAdapter {
 		renderer = new Renderer(batch, regularFont, viewportWidth, viewportHeight);
 
 		// Create figures.
-		background = new Background(gameAssets, viewportWidth, viewportHeight);
+		backgroundTop = new Background(gameAssets, viewportWidth, 80, "background.top");
+		backgroundTop.scrollSpeed = 0.125f;
+		backgroundTop.boundingBox.y = viewportHeight - backgroundTop.boundingBox.height;
+		backgroundBottom = new Background(gameAssets, viewportWidth, 160, "background.bottom");
 
 		runner = createRunner();
 		initRunner(runner);
@@ -135,12 +139,15 @@ public class RunnerGame extends ApplicationAdapter {
 		ArrayList<Figure> soundOnOffIcons = createSoundOnOffIcons();
 
 		menuScene = new Scene();
-		menuScene.figures.add(background);
+		menuScene.figures.add(backgroundTop);
+		menuScene.figures.add(backgroundBottom);
 		menuScene.figures.addAll(createMenuButtons());
 		menuScene.figures.addAll(soundOnOffIcons);
 
 		gameScene = new Scene();
-		gameScene.figures.add(background);
+		gameScene.figures.add(backgroundTop);
+		gameScene.figures.add(backgroundBottom);
+
 		for (ArrayList platformsLevel : platforms)
 			gameScene.figures.addAll(platformsLevel);
 		gameScene.figures.addAll(coins);
@@ -149,7 +156,8 @@ public class RunnerGame extends ApplicationAdapter {
 		gameScene.figures.addAll(soundOnOffIcons);
 
 		gameOverScene = new Scene();
-		gameOverScene.figures.add(background);
+		gameOverScene.figures.add(backgroundTop);
+		gameOverScene.figures.add(backgroundBottom);
 		gameOverScene.figures.addAll(soundOnOffIcons);
 
 		currentScene = menuScene;
@@ -190,11 +198,6 @@ public class RunnerGame extends ApplicationAdapter {
 		camera.update();
 		batch.setProjectionMatrix(camera.combined);
 		batch.begin();
-
-//		Platform p = new Platform(gameAssets, 2);
-//		p.boundingBox.x = 100;
-//		p.boundingBox.y = 100;
-//		renderer.drawFigure(p);
 
 		renderer.drawScene(currentScene);
 
@@ -489,6 +492,7 @@ public class RunnerGame extends ApplicationAdapter {
 			for (int j = 0; j < platforms[i].size(); j++){
 				Platform p = (Platform) platforms[i].get(j);
 				p.boundingBox.x = leftSceneEdgePosX;
+				p.setKind(0);
 			}
 		}
 
@@ -595,8 +599,8 @@ public class RunnerGame extends ApplicationAdapter {
 
 			float bottom = -this.runner.boundingBox.height * 3;
 			if (this.runner.boundingBox.y < bottom) {
-				this.runner.boundingBox.y = viewportHeight;
-                //onGameOver();
+				//this.runner.boundingBox.y = viewportHeight;
+                onGameOver();
 			}
 
 			runner.speed = runner.initSpeed;
