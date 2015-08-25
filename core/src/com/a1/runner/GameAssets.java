@@ -42,19 +42,21 @@ public class GameAssets {
         textures.put("runner.step2", "runner/step2.png");
         textures.put("runner.step3", "runner/step3.png");
 
-        textures.put("platform.2.top", "platform/2/top.png");
-        textures.put("platform.2.top_left", "platform/2/top_left.png");
-        textures.put("platform.2.top_right", "platform/2/top_right.png");
+        for (int j = 0; j < 1; j++) {
+            String sj = String.valueOf(j);
+            for (int i = 0; i < 4; i++) {
+                String si = String.valueOf(i);
+                String path = "platform/" + sj + "/" + si + "/";
+                String id = "platform."  + sj + "." + si + ".";
 
-        for (int i = 0; i < 4; i++){
-            String si = "_" + String.valueOf(i);
-            textures.put("platform.1.top" + si, "platform/1/top" + si + ".png");
-            textures.put("platform.1.top_left" + si, "platform/1/top_left" + si + ".png");
-            textures.put("platform.1.top_right" + si, "platform/1/top_right" + si + ".png");
+                textures.put(id + "top", path + "top.png");
+                textures.put(id + "top_left", path + "top_left.png");
+                textures.put(id + "top_right" + si, path + "top_right.png");
 
-            textures.put("platform.1.bottom" + si, "platform/1/bottom" + si + ".png");
-            textures.put("platform.1.bottom_left" + si, "platform/1/bottom_left" + si + ".png");
-            textures.put("platform.1.bottom_right" + si, "platform/1/bottom_right" + si + ".png");
+                textures.put(id + "bottom", path + "bottom.png");
+                textures.put(id + "bottom_left", path + "bottom_left.png");
+                textures.put(id + "bottom_right" + si, path + "bottom_right.png");
+            }
         }
 
         textures.put("particle", "particle.png");

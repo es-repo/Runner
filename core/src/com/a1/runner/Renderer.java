@@ -1,18 +1,55 @@
 package com.a1.runner;
 
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class Renderer {
 
     private SpriteBatch batch;
+    private BitmapFont font;
+    private float fontSymbolWidth;
+    private float fontSymbolHeight;
     private int viewportWidth;
     private int viewportHeight;
 
-    public Renderer(SpriteBatch batch, int viewportWidth, int viewportHeight){
+    public Renderer(SpriteBatch batch, BitmapFont font, int viewportWidth, int viewportHeight){
         this.batch = batch;
+        this.font = font;
+        GlyphLayout glyphLayout = new GlyphLayout();
+        glyphLayout.setText(font, "1");
+        fontSymbolWidth = glyphLayout.width;
+        fontSymbolHeight = glyphLayout.height;
         this.viewportWidth = viewportWidth;
         this.viewportHeight = viewportHeight;
+    }
+
+    public void drawText(String text, float x, float y, boolean alignH, boolean alignV, boolean alignR){
+        drawText(text, x, y, alignH, alignV, alignR, 0);
+    }
+
+    public void drawText(String text, float x, float y, boolean alignH, boolean alignV, boolean alignR, float scale){
+
+        float sx = 0, sy = 0;
+//        if (scale > 0) {
+//            sx = font.getScaleX();
+//            sy = font.getScaleX();
+//            font.getData().setScale(sx * scale, sy * scale);
+//        }
+//
+//
+//
+//        if (alignH || alignR || alignV) {
+//            glyphLayout.setText(font, text);
+//            if (alignH) {
+//                x =
+//            }
+//        }
+
+        if (scale > 0){
+            font.getData().setScale(sx, sy);
+        }
     }
 
     public void drawScene(Scene scene){

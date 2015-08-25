@@ -17,7 +17,7 @@ public class Platform extends ComposedFigure {
     private Tile bottomLeft;
     private Tile bottomRight;
 
-    public Platform(GameAssets assets, int level){
+    public Platform(GameAssets assets, int kind, int level){
 
 //        topLeft = new Sprite();
 //        topLeft.boundingBox.width = blockWidth;
@@ -31,10 +31,9 @@ public class Platform extends ComposedFigure {
 //        topRight.boundingBox.width = blockWidth;
 //        topRight.boundingBox.height = blockHeight;
 
-        String path = level < 0 ? "platform.2." : "platform.1.";
-        String suf = level < 0 ? "" : "_" + String.valueOf(level);
+        String id = "platform." + String.valueOf(kind) + "." + String.valueOf(level) + ".";
 
-        top.texture = assets.textures.get(path + "top" + suf);
+        top.texture = assets.textures.get(id + "top");
         //topLeft.texture = assets.textures.get(path + "top_left" + suf);
         //topRight.texture = assets.textures.get(path + "top_right" + suf);
 
@@ -52,7 +51,7 @@ public class Platform extends ComposedFigure {
 //            bottomLeft.boundingBox.y = by;
 
             bottom = new Tile(blockWidth, bottomTileHeight);
-            bottom.texture = assets.textures.get(path + "bottom" + suf);
+            bottom.texture = assets.textures.get(id + "bottom");
             bottom.setCountV(v);
             bottom.boundingBox.y = by;
             bottom.boundingBox.x = 0;//bottomLeft.boundingBox.width;

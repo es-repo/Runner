@@ -118,7 +118,7 @@ public class RunnerGame extends ApplicationAdapter {
 		camera.setToOrtho(false, viewportWidth, viewportHeight);
 		batch = new SpriteBatch();
 
-		renderer = new Renderer(batch, viewportWidth, viewportHeight);
+		renderer = new Renderer(batch, regularFont, viewportWidth, viewportHeight);
 
 		// Create figures.
 		background = new Background(gameAssets, viewportWidth, viewportHeight);
@@ -352,7 +352,7 @@ public class RunnerGame extends ApplicationAdapter {
 		for (int l = 0; l < levels; l++) {
 			platforms[l] = new ArrayList();
 			for (int i = 0; i < count; i++) {
-				Platform p = new Platform(gameAssets, l);
+				Platform p = new Platform(gameAssets, 0, l);
 				p.boundingBox.x = this.leftSceneEdgePosX;
 				p.boundingBox.y = Platform.blockWidth * 3 * (levels - l - 1) + levelPadding;
 				platforms[l].add(p);
