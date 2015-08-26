@@ -21,7 +21,20 @@ public class Platform extends ComposedFigure {
     private Tile bottomLeft;
     private Tile bottomRight;
 
+    private String[] textureIds;
+
     public Platform(GameAssets assets, int level){
+
+        int s = 6;
+        textureIds = new String[5 * s];
+        for (int i = 0; i < textureIds.length; i+=s){
+            textureIds[i] = "platform." + String.valueOf(i) + ".top";
+            textureIds[i + 1] = "platform." + String.valueOf(i) + ".top_left";
+            textureIds[i + 2] = "platform." + String.valueOf(i) + ".top_right";
+            textureIds[i + 3] = "platform." + String.valueOf(i) + ".bottom";
+            textureIds[i + 4] = "platform." + String.valueOf(i) + ".bottom_left";
+            textureIds[i + 5] = "platform." + String.valueOf(i) + ".bottom_right";
+        }
 
         this.assets = assets;
         this.level = level;
@@ -86,16 +99,15 @@ public class Platform extends ComposedFigure {
     }
 
     public void setKind(int kind){
-        String id = "platform." + String.valueOf(kind) + ".";
 
-        top.texture = assets.textures.get(id + "top");
-        topLeft.texture = assets.textures.get(id + "top_left");
-        topRight.texture = assets.textures.get(id + "top_right");
+        top.texture = assets.textures.get(textureIds[kind]);
+        topLeft.texture = assets.textures.get(textureIds[kind + 1]);
+        topRight.texture = assets.textures.get(textureIds[kind + 2]);
 
         if (bottom != null){
-            bottomLeft.texture = assets.textures.get(id + "bottom_left");
-            bottom.texture = assets.textures.get(id + "bottom");
-            bottomRight.texture = assets.textures.get(id + "bottom_right");
+            bottom.texture = assets.textures.get(textureIds[kind + 3]);
+            bottomLeft.texture = assets.textures.get(textureIds[kind + 4]);
+            bottomRight.texture = assets.textures.get(textureIds[kind + 5]);
 
             int dy = kind < 3 ? 2 : 0;
             float by = -2* top.boundingBox.height + dy;

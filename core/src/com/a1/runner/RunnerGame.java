@@ -643,7 +643,7 @@ public class RunnerGame extends ApplicationAdapter {
 
 			float bottom = -this.runner.boundingBox.height * 3;
 			if (this.runner.boundingBox.y < bottom) {
-				this.runner.boundingBox.y = viewportHeight;
+				//this.runner.boundingBox.y = viewportHeight;
 				onGameOver();
 			}
 
@@ -689,8 +689,8 @@ public class RunnerGame extends ApplicationAdapter {
 		}
 
 		ArrayList<Figure> touchedFigures = getTouchedFigure(currentScene.figures, x, y);
-		for(Figure f : touchedFigures) {
-			if (f.click())
+		for(int i = 0; i < touchedFigures.size(); i++) {
+			if (touchedFigures.get(i).click())
 				return;
 		}
 
@@ -708,7 +708,8 @@ public class RunnerGame extends ApplicationAdapter {
 
 	private ArrayList<Figure> getTouchedFigure(ArrayList<Figure> figures, float x, float y) {
 		touchedFigures.clear();
-		for(Figure f : figures){
+		for(int i = 0; i < figures.size(); i++){
+			Figure f = figures.get(i);
 			if (f.isVisible && f.boundingBox.contains(x, y))
 				touchedFigures.add(f);
 		}
