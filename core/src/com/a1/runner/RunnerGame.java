@@ -82,12 +82,11 @@ public class RunnerGame extends ApplicationAdapter {
 	
 	@Override
 	public void create () {
-		
+
 		// TODO: sometimes the game slowdowns. looks like because of sounds or GC.
 		// TODO: add back button handler
 		// TODO: music disappear after back button.
 		// TODO: tweak sound volume
-		// TODO: dont jump from the edge of the platform
 		// TODO: set ads
 		// TODO: rating
 		lastAdsShowingTime = (int)(System.currentTimeMillis() / 1000);
@@ -604,8 +603,8 @@ public class RunnerGame extends ApplicationAdapter {
 					Platform w = (Platform)this.platforms[l].get(i);
 					w.boundingBox.x -= this.runner.speed;
 				}
-				this.rearrangePlatforms();
 			}
+			this.rearrangePlatforms();
 
 			for (int i = 0; i < this.coins.size(); i++) {
 				this.coins.get(i).boundingBox.x -= this.runner.speed;
@@ -639,8 +638,8 @@ public class RunnerGame extends ApplicationAdapter {
 
 			float bottom = -this.runner.boundingBox.height * 3;
 			if (this.runner.boundingBox.y < bottom) {
-				//this.runner.boundingBox.y = viewportHeight;
-                onGameOver();
+				this.runner.boundingBox.y = viewportHeight;
+                //onGameOver();
 			}
 
 			float speedDelta = 0.25f;

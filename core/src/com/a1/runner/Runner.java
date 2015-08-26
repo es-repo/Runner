@@ -80,7 +80,8 @@ public class Runner extends Sprite {
     }
 
     public boolean isOnPlatform(Platform platform) {
-        return platform.boundingBox.contains(this.boundingBox.x + this.boundingBox.width / 2, this.boundingBox.y);
+        return platform.boundingBox.contains(this.boundingBox.x, this.boundingBox.y) ||
+                platform.boundingBox.contains(this.boundingBox.x + boundingBox.width, this.boundingBox.y);
     }
 
     public boolean isNearCoin(Coin coin) {
