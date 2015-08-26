@@ -174,10 +174,10 @@ public class RunnerGame extends ApplicationAdapter {
 			gameScene.figures.addAll(platformsLevel);
 		gameScene.figures.addAll(coins);
 		gameScene.figures.add(runner);
-		gameScene.figures.addAll(soundOnOffIcons);
 		ArrayList<Figure> pausePlayButtons = createPausePlayIcons();
 		gameScene.figures.add(pausePlayButtons.get(0));
 		gameScene.figures.add(blackmask);
+		gameScene.figures.addAll(soundOnOffIcons);
 		gameScene.figures.add(help);
 		gameScene.figures.add(pausePlayButtons.get(1));
 
@@ -369,8 +369,6 @@ public class RunnerGame extends ApplicationAdapter {
 		on.setClickHandler(new ClickHandler() {
 			@Override
 			public void action() {
-				if (isPause)
-					return;
 				on.isVisible = false;
 				off.isVisible = true;
 				soundOff();
@@ -386,8 +384,6 @@ public class RunnerGame extends ApplicationAdapter {
 		off.setClickHandler(new ClickHandler() {
 			@Override
 			public void action() {
-				if (isPause)
-					return;
 				on.isVisible = true;
 				off.isVisible = false;
 				soundOn();
