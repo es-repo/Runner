@@ -23,10 +23,10 @@ public class RunnerGame extends ApplicationAdapter {
 	Renderer renderer;
 	BitmapFont regularFont;
 	GlyphLayout glyphLayout;
-    SoundManager soundManager;
-    Preferences prefs;
+	SoundManager soundManager;
+	Preferences prefs;
 
-    float iconSize = 24;
+	float iconSize = 24;
 	float padding = 10;
 
 	int leftSceneEdgePosX = -Platform.blockWidth * 15;
@@ -41,13 +41,14 @@ public class RunnerGame extends ApplicationAdapter {
 	final int levelSwitchDelta = 25;
 	int score;
 	String scoreString;
-    int bestScore;
+	int bestScore;
+	String bestScoreString;
 	boolean soundOff;
 
 	long ticks;
 
-    int coinsCount = 6;	
-    ArrayList<Coin> coins;
+	int coinsCount = 6;
+	ArrayList<Coin> coins;
 	ArrayList<Coin> availableCoins;
 
 	ArrayList<Figure> touchedFigures = new ArrayList<Figure>();
@@ -75,11 +76,11 @@ public class RunnerGame extends ApplicationAdapter {
 
 	public RunnerGame(IAdsController adsController, GameServices actionResolver){
 
-        this.adsController = adsController;
+		this.adsController = adsController;
 		this.gameServices = actionResolver;
 		this.gameServices.setGameServicesEnabled(gameServicesEnabled);
 	}
-	
+
 	@Override
 	public void create () {
 
@@ -89,6 +90,7 @@ public class RunnerGame extends ApplicationAdapter {
 		// TODO: tweak sound volume
 		// TODO: set ads
 		// TODO: rating
+		// TODO: test on all android versions
 		lastAdsShowingTime = (int)(System.currentTimeMillis() / 1000);
 
 		initPrefs();
@@ -96,10 +98,10 @@ public class RunnerGame extends ApplicationAdapter {
 		// Don't load sounds if activity was already created once.
 		// Otherwise it leads to errors with SoundPool after several
 		// the Activity recreations.
-        boolean dontLoadSoundsAgain = gameAssets != null;
+		boolean dontLoadSoundsAgain = gameAssets != null;
 		if (gameAssets == null){
-            gameAssets = new GameAssets();
-        }
+			gameAssets = new GameAssets();
+		}
 		gameAssets.loadAssets(dontLoadSoundsAgain);
 		soundManager = new SoundManager(gameAssets.sounds, gameAssets.musics.get("song"));
 		if (soundOff)
@@ -193,6 +195,7 @@ public class RunnerGame extends ApplicationAdapter {
 				prefs.putInteger("bestScore", 0);
 			}
 			bestScore = prefs.getInteger("bestScore");
+			bestScoreString = String.valueOf(bestScore);
 
 			if (!prefs.contains("sondoff")) {
 				prefs.putBoolean("soundoff", false);
@@ -438,7 +441,7 @@ public class RunnerGame extends ApplicationAdapter {
 	private Runner createRunner(){
 		Runner r = new Runner(gameAssets, soundManager);
 		r.boundingBox.x = this.leftSceneEdgePosX;
-        return r;
+		return r;
 	}
 
 	private void initRunner(Runner r) {
@@ -449,25 +452,25 @@ public class RunnerGame extends ApplicationAdapter {
 		r.gatheredCoins = 0;
 	}
 
-    private ArrayList<Coin> createCoins(){
-        ArrayList<Coin> coins = new ArrayList<Coin>();
-        for (int i = 0; i < coinsCount; i++) {
-            Coin c = new Coin();
+	private ArrayList<Coin> createCoins(){
+		ArrayList<Coin> coins = new ArrayList<Coin>();
+		for (int i = 0; i < coinsCount; i++) {
+			Coin c = new Coin();
 			c.texture = gameAssets.textures.get("coin");
-            c.boundingBox.width = Coin.size;
-            c.boundingBox.height = Coin.size;
+			c.boundingBox.width = Coin.size;
+			c.boundingBox.height = Coin.size;
 			c.boundingBox.x = leftSceneEdgePosX;
-            c.sound = gameAssets.sounds.get("coin");
-            coins.add(c);
-        }
-        Coin superCoin = coins.get(coinsCount - 1);
-        superCoin.boundingBox.height = superCoin.boundingBox.width = Coin.superSize;
-        superCoin.isSuper = true;
-        superCoin.texture = gameAssets.textures.get("supercoin");
-        return coins;
-    }
+			c.sound = gameAssets.sounds.get("coin");
+			coins.add(c);
+		}
+		Coin superCoin = coins.get(coinsCount - 1);
+		superCoin.boundingBox.height = superCoin.boundingBox.width = Coin.superSize;
+		superCoin.isSuper = true;
+		superCoin.texture = gameAssets.textures.get("supercoin");
+		return coins;
+	}
 
-    private void rearrangeCoins() {
+	private void rearrangeCoins() {
 
 		availableCoins.clear();
 		for (int i = 0; i < this.coins.size(); i++) {
@@ -477,23 +480,23 @@ public class RunnerGame extends ApplicationAdapter {
 			}
 		}
 
-        for (int i = 0; i < this.platforms.length; i++) {
+		for (int i = 0; i < this.platforms.length; i++) {
 
-            if (availableCoins.size() == 0)
-                break;
+			if (availableCoins.size() == 0)
+				break;
 
-            int ci = (int)(Math.random() * availableCoins.size());
+			int ci = (int)(Math.random() * availableCoins.size());
 			Coin coin = availableCoins.get(ci);
-            double probability = coin.isSuper ? 0.0002 : 0.5;
-            double v = Math.random();
-            if (v < probability) {
-                Platform p = (Platform)this.platforms[i].get(this.platforms[i].size() - 1);
+			double probability = coin.isSuper ? 0.0002 : 0.5;
+			double v = Math.random();
+			if (v < probability) {
+				Platform p = (Platform)this.platforms[i].get(this.platforms[i].size() - 1);
 				coin.boundingBox.x = getCoinRandomPosition(p);
 				coin.boundingBox.y = p.boundingBox.y + p.boundingBox.height;
-                availableCoins.remove(coin);
-            }
-        }
-    }
+				availableCoins.remove(coin);
+			}
+		}
+	}
 
 	private float getCoinRandomPosition(Platform platform){
 		int s = (int)(platform.boundingBox.width / Coin.superSize);
@@ -515,17 +518,17 @@ public class RunnerGame extends ApplicationAdapter {
 		return leftSceneEdgePosX;
 	}
 
-    private void takeCoin(){
-        for (int i = 0; i < this.coins.size(); i++) {
-            Coin c = this.coins.get(i);
-            if (this.runner.isNearCoin(c)) {
-                this.runner.gatheredCoins+= c.isSuper ? 10 : 1;
+	private void takeCoin(){
+		for (int i = 0; i < this.coins.size(); i++) {
+			Coin c = this.coins.get(i);
+			if (this.runner.isNearCoin(c)) {
+				this.runner.gatheredCoins+= c.isSuper ? 10 : 1;
 				c.boundingBox.x = leftSceneEdgePosX;
-                soundManager.playSound("coin", 0.4f);
+				soundManager.playSound("coin", 0.4f);
 				break;
-            }
-        }
-    }
+			}
+		}
+	}
 
 	private void initPlatformsAndCoinsPositions(){
 		for (int i = 0; i < platforms.length; i++){
@@ -561,34 +564,36 @@ public class RunnerGame extends ApplicationAdapter {
 	}
 
 	private void drawGameOver(){
-		// TODO: fix objects allocation.
-        float sx = regularFont.getScaleX();
-        float sy = regularFont.getScaleX();
-        regularFont.getData().setScale(sx * 1.5f, sy * 1.5f);
-        glyphLayout.setText(regularFont, "GAME OVER");
-        regularFont.draw(batch, glyphLayout, (viewportWidth - glyphLayout.width) / 2,
-                viewportHeight / 2 + (viewportHeight / 2 - glyphLayout.height) / 2 + glyphLayout.height);
-        regularFont.getData().setScale(sx, sy);
 
-		String best = String.valueOf(bestScore);
+		float sx = regularFont.getScaleX();
+		float sy = regularFont.getScaleX();
+		regularFont.getData().setScale(sx * 1.5f, sy * 1.5f);
+		glyphLayout.setText(regularFont, "GAME OVER");
+		regularFont.draw(batch, glyphLayout, (viewportWidth - glyphLayout.width) / 2,
+				viewportHeight / 2 + (viewportHeight / 2 - glyphLayout.height) / 2 + glyphLayout.height);
+		regularFont.getData().setScale(sx, sy);
 
-        glyphLayout.setText(regularFont, "your best: " + best);
-        float xs = (viewportWidth - glyphLayout.width) / 2;
-        float xe = (viewportWidth + glyphLayout.width) / 2;
 
-        float y = viewportHeight / 2;
-        glyphLayout.setText(regularFont, "score:");
-        regularFont.draw(batch, glyphLayout, xs, y);
-        String score = String.valueOf(runner.gatheredCoins);
-        glyphLayout.setText(regularFont, score);
-        regularFont.draw(batch, glyphLayout, xe - glyphLayout.width, y);
+		glyphLayout.setText(regularFont, "your best: ");
+		float width = glyphLayout.width;
+		glyphLayout.setText(regularFont, bestScoreString);
+		width += glyphLayout.width;
+		float xs = (viewportWidth - width) / 2;
+		float xe = (viewportWidth + width) / 2;
 
-        y -=  glyphLayout.height * 1.5;
-        glyphLayout.setText(regularFont, "your best:");
-        regularFont.draw(batch, glyphLayout, xs, y);
-        glyphLayout.setText(regularFont, best);
-        regularFont.draw(batch, glyphLayout, xe - glyphLayout.width, y);
-    }
+		float y = viewportHeight / 2;
+		glyphLayout.setText(regularFont, "score:");
+		regularFont.draw(batch, glyphLayout, xs, y);
+		String score = String.valueOf(runner.gatheredCoins);
+		glyphLayout.setText(regularFont, score);
+		regularFont.draw(batch, glyphLayout, xe - glyphLayout.width, y);
+
+		y -=  glyphLayout.height * 1.5;
+		glyphLayout.setText(regularFont, "your best:");
+		regularFont.draw(batch, glyphLayout, xs, y);
+		glyphLayout.setText(regularFont, bestScoreString);
+		regularFont.draw(batch, glyphLayout, xe - glyphLayout.width, y);
+	}
 
 	void doLogicStep() {
 
@@ -639,7 +644,7 @@ public class RunnerGame extends ApplicationAdapter {
 			float bottom = -this.runner.boundingBox.height * 3;
 			if (this.runner.boundingBox.y < bottom) {
 				this.runner.boundingBox.y = viewportHeight;
-                //onGameOver();
+				onGameOver();
 			}
 
 			float speedDelta = 0.25f;
@@ -660,6 +665,7 @@ public class RunnerGame extends ApplicationAdapter {
 		try{
 			if (bestScore < runner.gatheredCoins) {
 				bestScore = runner.gatheredCoins;
+				bestScoreString = String.valueOf(bestScore);
 				prefs.putInteger("bestScore", bestScore);
 				prefs.flush();
 			}
@@ -694,7 +700,7 @@ public class RunnerGame extends ApplicationAdapter {
 		else if (this.inGameOver) {
 			this.inMenu = true;
 			this.inGameOver = false;
-            soundManager.playSound("start", 0.5f);
+			soundManager.playSound("start", 0.5f);
 			currentScene = menuScene;
 			tryShowAds();
 		}
@@ -723,7 +729,7 @@ public class RunnerGame extends ApplicationAdapter {
 				public void run() {
 					//Gdx.app.exit();
 					lastAdsShowingTime = (int)(System.currentTimeMillis() / 1000);
-                    // Game  activity will be restarted after the ads closing so force to call dispose.
+					// Game  activity will be restarted after the ads closing so force to call dispose.
 					//disposeNoSounds();
 				}
 			});
