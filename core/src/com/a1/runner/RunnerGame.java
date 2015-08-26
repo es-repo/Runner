@@ -38,7 +38,7 @@ public class RunnerGame extends ApplicationAdapter {
 	Sprite blackmask;
 	Sprite help;
 
-	final int levelSwitchDelta = 10;
+	final int levelSwitchDelta = 25;
 	int score;
 	String scoreString;
     int bestScore;
@@ -83,15 +83,14 @@ public class RunnerGame extends ApplicationAdapter {
 	@Override
 	public void create () {
 		// TODO: add music by
-		// TODO: redraw help
 		// TODO: sound in begin
 		// TODO: sometimes the game slowdowns. looks like because of sounds or GC.
+		// TODO: add back button handler
 		// TODO: music disappear after back button.
 		// TODO: tweak sound volume
 		// TODO: dont jump from the edge of the platform
 		// TODO: set ads
 		// TODO: rating
-		// TODO: pers 3rd frame shift 1 pixel head.
 		lastAdsShowingTime = (int)(System.currentTimeMillis() / 1000);
 
 		initPrefs();
@@ -225,6 +224,9 @@ public class RunnerGame extends ApplicationAdapter {
 
 		renderer.drawScene(currentScene);
 
+		if (inMenu){
+			drawCredits();
+		}
 		if (inGame) {
 			drawScore();
 		}
@@ -538,6 +540,15 @@ public class RunnerGame extends ApplicationAdapter {
 			Coin c = coins.get(i);
 			c.boundingBox.x = leftSceneEdgePosX;
 		}
+	}
+
+	private void drawCredits(){
+		float sx = regularFont.getScaleX();
+		float sy = regularFont.getScaleX();
+		regularFont.getData().setScale(sx * 0.35f, sy * 0.35f);
+		glyphLayout.setText(regularFont, "Music by 8-bit Ninjas");
+		regularFont.draw(batch, glyphLayout, 2, glyphLayout.height + 3);
+		regularFont.getData().setScale(sx, sy);
 	}
 
 	private void drawScore(){
