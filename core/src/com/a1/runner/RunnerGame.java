@@ -82,8 +82,7 @@ public class RunnerGame extends ApplicationAdapter {
 	
 	@Override
 	public void create () {
-		// TODO: add music by
-		// TODO: sound in begin
+		
 		// TODO: sometimes the game slowdowns. looks like because of sounds or GC.
 		// TODO: add back button handler
 		// TODO: music disappear after back button.
@@ -184,6 +183,8 @@ public class RunnerGame extends ApplicationAdapter {
 		gameOverScene.figures.addAll(soundOnOffIcons);
 
 		currentScene = menuScene;
+
+		soundManager.playSound("start", 0.5f);
 	}
 
 	private void initPrefs(){
