@@ -2,6 +2,10 @@ package com.a1.runner;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputAdapter;
+import com.badlogic.gdx.InputMultiplexer;
+import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -84,7 +88,6 @@ public class RunnerGame extends ApplicationAdapter {
 	@Override
 	public void create () {
 
-		// TODO: sometimes the game slowdowns. looks like because of sounds or GC.
 		// TODO: add back button handler
 		// TODO: music disappear after back button.
 		// TODO: tweak sound volume
@@ -186,6 +189,8 @@ public class RunnerGame extends ApplicationAdapter {
 		currentScene = menuScene;
 
 		soundManager.playSound("start", 0.5f);
+
+		Gdx.input.setCatchBackKey(true);
 	}
 
 	private void initPrefs(){
@@ -210,6 +215,11 @@ public class RunnerGame extends ApplicationAdapter {
 
 	@Override
 	public void render() {
+
+		if (Gdx.input.isKeyPressed(Input.Keys.BACK)){
+			Gdx.app.exit();
+			return;
+		}
 
 		if (Gdx.input.justTouched()) {
 			touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
