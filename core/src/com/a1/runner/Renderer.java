@@ -9,6 +9,7 @@ public class Renderer {
 
     private SpriteBatch batch;
     private BitmapFont font;
+    private GlyphLayout glyphLayout;
     private float fontSymbolWidth;
     private float fontSymbolHeight;
     private int viewportWidth;
@@ -17,8 +18,8 @@ public class Renderer {
     public Renderer(SpriteBatch batch, BitmapFont font, int viewportWidth, int viewportHeight){
         this.batch = batch;
         this.font = font;
-        GlyphLayout glyphLayout = new GlyphLayout();
-        glyphLayout.setText(font, "1");
+        this.glyphLayout = new GlyphLayout();
+        this.glyphLayout.setText(font, "1");
         fontSymbolWidth = glyphLayout.width;
         fontSymbolHeight = glyphLayout.height;
         this.viewportWidth = viewportWidth;
@@ -26,28 +27,40 @@ public class Renderer {
     }
 
     public void drawText(String text, float x, float y, boolean alignH, boolean alignV, boolean alignR){
-        drawText(text, x, y, alignH, alignV, alignR, 0);
+        drawText(text, x, y, alignH, alignV, alignR, 1);
     }
 
     public void drawText(String text, float x, float y, boolean alignH, boolean alignV, boolean alignR, float scale){
 
-        float sx = 0, sy = 0;
-//        if (scale > 0) {
-//            sx = font.getScaleX();
-//            sy = font.getScaleX();
-//            font.getData().setScale(sx * scale, sy * scale);
-//        }
-//
-//
-//
-//        if (alignH || alignR || alignV) {
-//            glyphLayout.setText(font, text);
-//            if (alignH) {
-//                x =
-//            }
-//        }
+          float sx = 1, sy = 1;
+            if (scale != 1) {
+                sx = font.getScaleX();
+                sy = font.getScaleX();
+                font.getData().setScale(sx * scale, sy * scale);
+            }
 
-        if (scale > 0){
+            float textWidth = text.length() * fontSymbolWidth * scale;
+            float textHeight = fontSymbolHeight * scale;
+
+            float posX = x;
+            float posY = y;
+            if (alignH){
+                posX = (viewportWidth - x - textWidth) / 2;
+            }
+
+            if (alignV){
+                posY = (viewportHeight - y - textHeight) / 2;
+            }
+
+            if (alignR){
+                posX = x - textWidth;
+        }
+
+        glyphLayout.setText(font, text);
+        float w = glyphLayout.width;
+        font.draw(batch, glyphLayout, posX, posY);
+
+        if (scale != 0){
             font.getData().setScale(sx, sy);
         }
     }

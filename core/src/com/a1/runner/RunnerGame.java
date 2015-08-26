@@ -52,8 +52,6 @@ public class RunnerGame extends ApplicationAdapter {
     ArrayList<Coin> coins;
 	ArrayList<Coin> availableCoins;
 
-	int particlesCount = 0;
-
 	ArrayList<Figure> touchedFigures = new ArrayList<Figure>();
 
 	Vector3 touchPos = new Vector3();
@@ -110,7 +108,6 @@ public class RunnerGame extends ApplicationAdapter {
 			soundManager.off();
 
 		regularFont = new BitmapFont(Gdx.files.internal("fonts/vermin_vibes_1989.fnt"));
-		//regularFont.getData().scale(0.25f);
 		regularFont.setColor(com.badlogic.gdx.graphics.Color.WHITE);
 		glyphLayout = new GlyphLayout();
 
@@ -122,10 +119,23 @@ public class RunnerGame extends ApplicationAdapter {
 		renderer = new Renderer(batch, regularFont, viewportWidth, viewportHeight);
 
 		// Create figures.
-		backgroundTop = new Background(gameAssets, viewportWidth, 80, "background.top");
+
+		Sprite title = new Sprite();
+		title.texture = gameAssets.textures.get("title");
+		title.boundingBox.width = 350;
+		title.boundingBox.height = 42;
+		title.boundingBox.x = (viewportWidth - title.boundingBox.width) / 2;
+		title.boundingBox.y = viewportHeight / 2 + (viewportHeight / 2 - title.boundingBox.height) / 2;
+
+//		Sprite help = new Sprite();
+//		help.boundingBox.width = 150;
+//		help.boundingBox.height = 90;
+//		help.texture = gameAssets.textures.get("help");
+
+		backgroundTop = new Background(gameAssets, viewportWidth, 0, "background.top");
 		backgroundTop.scrollSpeed = 0.125f;
 		backgroundTop.boundingBox.y = viewportHeight - backgroundTop.boundingBox.height;
-		backgroundBottom = new Background(gameAssets, viewportWidth, 160, "background.bottom");
+		backgroundBottom = new Background(gameAssets, viewportWidth, 240, "background.main");
 
 		runner = createRunner();
 		initRunner(runner);
@@ -141,6 +151,8 @@ public class RunnerGame extends ApplicationAdapter {
 		menuScene = new Scene();
 		menuScene.figures.add(backgroundTop);
 		menuScene.figures.add(backgroundBottom);
+		menuScene.figures.add(title);
+		//menuScene.figures.add(help);
 		menuScene.figures.addAll(createMenuButtons());
 		menuScene.figures.addAll(soundOnOffIcons);
 
@@ -205,7 +217,7 @@ public class RunnerGame extends ApplicationAdapter {
 			drawScore();
 		}
 		else if (inMenu){
-			drawTitle();
+			//drawTitle();
 		}
 		else if (inGameOver){
 			drawGameOver();
@@ -219,13 +231,15 @@ public class RunnerGame extends ApplicationAdapter {
 	private ArrayList<Button> createMenuButtons() {
 		ArrayList<Button> buttons = new ArrayList<Button>();
 
-		float buttonWidth = viewportWidth / 2.2f;
-		float buttonHeight = viewportHeight / 8f;
+		float buttonWidth = 180 * 0.9f;
+		float buttonHeight = 30 * 0.9f;
 
+		float y = viewportHeight / 2 - buttonHeight / 2;
+		float dy = -buttonHeight * 1.25f;
 		Button startButton = new Button(gameAssets.textures.get("buttons.start"), gameAssets.textures.get("buttons.start_pressed"));
 		startButton.boundingBox.width = buttonWidth;
 		startButton.boundingBox.height = buttonHeight;
-		startButton.boundingBox.y = viewportHeight / 2 - startButton.boundingBox.height;
+		startButton.boundingBox.y = y;
 		centerFigureHorizontally(startButton);
 		startButton.setClickHandler(new ClickHandler() {
 			@Override
@@ -245,10 +259,11 @@ public class RunnerGame extends ApplicationAdapter {
 		buttons.add(startButton);
 
 		if (gameServicesEnabled) {
+			y += dy;
 			Button topScoresButton = new Button(gameAssets.textures.get("buttons.topscores"), gameAssets.textures.get("buttons.topscores_pressed"));
 			topScoresButton.boundingBox.width = buttonWidth;
 			topScoresButton.boundingBox.height = buttonHeight;
-			topScoresButton.boundingBox.y = startButton.boundingBox.y - startButton.boundingBox.height * 1.2f;
+			topScoresButton.boundingBox.y = y;
 			centerFigureHorizontally(topScoresButton);
 			topScoresButton.setClickHandler(new ClickHandler() {
 				@Override
@@ -262,6 +277,24 @@ public class RunnerGame extends ApplicationAdapter {
 			});
 			buttons.add(topScoresButton);
 		}
+
+		y += dy;
+		Button rateButton = new Button(gameAssets.textures.get("buttons.rate"), gameAssets.textures.get("buttons.rate_pressed"));
+		rateButton.boundingBox.width = buttonWidth;
+		rateButton.boundingBox.height = buttonHeight;
+		rateButton.boundingBox.y = y;
+		centerFigureHorizontally(rateButton);
+		rateButton.setClickHandler(new ClickHandler() {
+			@Override
+			public void action() {
+//					if (gameServices.getSignedIn()) {
+//						gameServices.showLeaderboard();
+//					} else {
+//						gameServices.login(true);
+//					}
+			}
+		});
+		buttons.add(rateButton);
 		return buttons;
 	}
 
@@ -444,11 +477,11 @@ public class RunnerGame extends ApplicationAdapter {
 
             int ci = (int)(Math.random() * availableCoins.size());
 			Coin coin = availableCoins.get(ci);
-            double probability = 0.5;//coin.isSuper ? 0.0002 : 0.5;
+            double probability = coin.isSuper ? 0.1/*0.0002*/ : 0.5;
             double v = Math.random();
             if (v < probability) {
                 Platform p = (Platform)this.platforms[i].get(this.platforms[i].size() - 1);
-				coin.boundingBox.x = getCoinRandomPosition(p); //(float)(w.boundingBox.x + Math.random() * (w.boundingBox.width - coin.boundingBox.width));
+				coin.boundingBox.x = getCoinRandomPosition(p);
 				coin.boundingBox.y = p.boundingBox.y + p.boundingBox.height;
                 availableCoins.remove(coin);
             }
@@ -525,7 +558,7 @@ public class RunnerGame extends ApplicationAdapter {
 		// TODO: fix objects allocation.
         float sx = regularFont.getScaleX();
         float sy = regularFont.getScaleX();
-        regularFont.getData().setScale(sx * 2, sy * 2);
+        regularFont.getData().setScale(sx * 1.5f, sy * 1.5f);
         glyphLayout.setText(regularFont, "GAME OVER");
         regularFont.draw(batch, glyphLayout, (viewportWidth - glyphLayout.width) / 2,
                 viewportHeight / 2 + (viewportHeight / 2 - glyphLayout.height) / 2 + glyphLayout.height);

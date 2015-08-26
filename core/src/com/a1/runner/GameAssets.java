@@ -35,13 +35,18 @@ public class GameAssets {
 
     public void loadAssets(boolean noSounds){
         HashMap<String, String> textures = new HashMap<String, String>();
+        textures.put("title", "title.png");
+        textures.put("help", "help.png");
         textures.put("background.top", "background/top.png");
         textures.put("background.bottom", "background/bottom.png");
+        textures.put("background.main", "background/main.png");
         textures.put("coin", "coin.png");
         textures.put("supercoin", "supercoin.png");
         textures.put("runner.step1", "runner/step1.png");
         textures.put("runner.step2", "runner/step2.png");
         textures.put("runner.step3", "runner/step3.png");
+        textures.put("runner.fall", "runner/fall.png");
+        textures.put("runner.jump", "runner/jump.png");
 
         for (int k = 0; k < 5; k++) {
             String sk = String.valueOf(k);
@@ -64,6 +69,8 @@ public class GameAssets {
         textures.put("buttons.start_pressed", "buttons/start_pressed.png");
         textures.put("buttons.topscores", "buttons/topscores.png");
         textures.put("buttons.topscores_pressed", "buttons/topscores_pressed.png");
+        textures.put("buttons.rate", "buttons/rate.png");
+        textures.put("buttons.rate_pressed", "buttons/rate_pressed.png");
 
         for (Map.Entry<String, String> entry : textures.entrySet())	{
             this.textures.put(entry.getKey(), new Texture(Gdx.files.internal("textures/" + entry.getValue())));
