@@ -86,11 +86,13 @@ public class RunnerGame extends ApplicationAdapter {
 	
 	@Override
 	public void create () {
-		// TODO: performance
-		// TODO: music disappear after back button.
-		// TODO: dont jump from the edge of the platform
-		// TODO: runner falling from the top goes through bottom platform
+		// TODO: add music by
+		// TODO: redraw help
+		// TODO: sound in begin
 		// TODO: sometimes the game slowdowns. looks like because of sounds or GC.
+		// TODO: music disappear after back button.
+		// TODO: tweak sound volume
+		// TODO: dont jump from the edge of the platform
 		// TODO: set ads
 		// TODO: rating
 		// TODO: pers 3rd frame shift 1 pixel head.
@@ -542,7 +544,7 @@ public class RunnerGame extends ApplicationAdapter {
 			for (int j = 0; j < platforms[i].size(); j++){
 				Platform p = (Platform) platforms[i].get(j);
 				p.boundingBox.x = leftSceneEdgePosX;
-				p.setKind(0);
+				p.setKind(4);
 			}
 		}
 
@@ -639,8 +641,8 @@ public class RunnerGame extends ApplicationAdapter {
 
 			float bottom = -this.runner.boundingBox.height * 3;
 			if (this.runner.boundingBox.y < bottom) {
-				//this.runner.boundingBox.y = viewportHeight;
-                onGameOver();
+				this.runner.boundingBox.y = viewportHeight;
+                //onGameOver();
 			}
 
 			runner.speed = runner.initSpeed;
