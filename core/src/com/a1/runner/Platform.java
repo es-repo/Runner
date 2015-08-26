@@ -40,7 +40,7 @@ public class Platform extends ComposedFigure {
 
         if (level >=0 ) {
             float bottomTileHeight = 32;
-            int v = 5 - level;
+            int v = 6 - level;
             float by = -2* top.boundingBox.height;
             bottomLeft = new Tile(blockWidth, bottomTileHeight);
             bottomLeft.setCountV(v);

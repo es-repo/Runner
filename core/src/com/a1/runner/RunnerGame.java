@@ -122,7 +122,7 @@ public class RunnerGame extends ApplicationAdapter {
 
 		Sprite title = new Sprite();
 		title.texture = gameAssets.textures.get("title");
-		title.boundingBox.width = 350;
+		title.boundingBox.width = 358;
 		title.boundingBox.height = 42;
 		title.boundingBox.x = (viewportWidth - title.boundingBox.width) / 2;
 		title.boundingBox.y = viewportHeight / 2 + (viewportHeight / 2 - title.boundingBox.height) / 2;
