@@ -9,7 +9,8 @@ public class Platform extends ComposedFigure {
     public static float maxDistance = blockWidth * 8;
     public static float minDistance = blockWidth * 3;
 
-    private int level;
+    private int kindsCount = 5;
+    private int partsCount = 6;
 
     private GameAssets assets;
 
@@ -25,19 +26,17 @@ public class Platform extends ComposedFigure {
 
     public Platform(GameAssets assets, int level){
 
-        int s = 6;
-        textureIds = new String[5 * s];
-        for (int i = 0; i < textureIds.length; i+=s){
-            textureIds[i] = "platform." + String.valueOf(i) + ".top";
-            textureIds[i + 1] = "platform." + String.valueOf(i) + ".top_left";
-            textureIds[i + 2] = "platform." + String.valueOf(i) + ".top_right";
-            textureIds[i + 3] = "platform." + String.valueOf(i) + ".bottom";
-            textureIds[i + 4] = "platform." + String.valueOf(i) + ".bottom_left";
-            textureIds[i + 5] = "platform." + String.valueOf(i) + ".bottom_right";
+        textureIds = new String[kindsCount * partsCount];
+        for (int i = 0, k =0; i < textureIds.length; i+=partsCount, k++){
+            textureIds[i] = "platform." + String.valueOf(k) + ".top";
+            textureIds[i + 1] = "platform." + String.valueOf(k) + ".top_left";
+            textureIds[i + 2] = "platform." + String.valueOf(k) + ".top_right";
+            textureIds[i + 3] = "platform." + String.valueOf(k) + ".bottom";
+            textureIds[i + 4] = "platform." + String.valueOf(k) + ".bottom_left";
+            textureIds[i + 5] = "platform." + String.valueOf(k) + ".bottom_right";
         }
 
         this.assets = assets;
-        this.level = level;
 
         topLeft = new Sprite();
         topLeft.boundingBox.width = blockWidth;
@@ -100,14 +99,15 @@ public class Platform extends ComposedFigure {
 
     public void setKind(int kind){
 
-        top.texture = assets.textures.get(textureIds[kind]);
-        topLeft.texture = assets.textures.get(textureIds[kind + 1]);
-        topRight.texture = assets.textures.get(textureIds[kind + 2]);
+        int i = partsCount * kind;
+        top.texture = assets.textures.get(textureIds[i]);
+        topLeft.texture = assets.textures.get(textureIds[i + 1]);
+        topRight.texture = assets.textures.get(textureIds[i + 2]);
 
         if (bottom != null){
-            bottom.texture = assets.textures.get(textureIds[kind + 3]);
-            bottomLeft.texture = assets.textures.get(textureIds[kind + 4]);
-            bottomRight.texture = assets.textures.get(textureIds[kind + 5]);
+            bottom.texture = assets.textures.get(textureIds[i + 3]);
+            bottomLeft.texture = assets.textures.get(textureIds[i + 4]);
+            bottomRight.texture = assets.textures.get(textureIds[i + 5]);
 
             int dy = kind < 3 ? 2 : 0;
             float by = -2* top.boundingBox.height + dy;
