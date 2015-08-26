@@ -132,10 +132,10 @@ public class RunnerGame extends ApplicationAdapter {
 //		help.boundingBox.height = 90;
 //		help.texture = gameAssets.textures.get("help");
 
-		backgroundTop = new Background(gameAssets, viewportWidth, 0, "background.top");
+		backgroundTop = new Background(gameAssets, viewportWidth, 80, "background.top");
 		backgroundTop.scrollSpeed = 0.125f;
 		backgroundTop.boundingBox.y = viewportHeight - backgroundTop.boundingBox.height;
-		backgroundBottom = new Background(gameAssets, viewportWidth, 240, "background.main");
+		backgroundBottom = new Background(gameAssets, viewportWidth, 160, "background.bottom");
 
 		runner = createRunner();
 		initRunner(runner);
