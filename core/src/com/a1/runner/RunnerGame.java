@@ -36,6 +36,7 @@ public class RunnerGame extends ApplicationAdapter {
 	Background backgroundTop;
 	Background backgroundBottom;
 	Sprite blackmask;
+	Sprite help;
 
 	int level2 = 25;
 	int level3 = 50;
@@ -61,6 +62,7 @@ public class RunnerGame extends ApplicationAdapter {
 	boolean inGame;
 	boolean inGameOver;
 	boolean isPause;
+	boolean isHelp;
 
 	IAdsController adsController;
 	boolean adsEnabled = false;
@@ -128,10 +130,12 @@ public class RunnerGame extends ApplicationAdapter {
 		title.boundingBox.x = (viewportWidth - title.boundingBox.width) / 2;
 		title.boundingBox.y = viewportHeight / 2 + (viewportHeight / 2 - title.boundingBox.height) / 2;
 
-//		Sprite help = new Sprite();
-//		help.boundingBox.width = 150;
-//		help.boundingBox.height = 90;
-//		help.texture = gameAssets.textures.get("help");
+		help = new Sprite();
+		help.boundingBox.width = 150;
+		help.boundingBox.height = 90;
+		help.boundingBox.x = (viewportWidth - help.boundingBox.width) / 2;
+		help.boundingBox.y = (viewportHeight - help.boundingBox.height) / 2;
+		help.texture = gameAssets.textures.get("help");
 
 		backgroundTop = new Background(gameAssets, viewportWidth, 80, "background.top");
 		backgroundTop.scrollSpeed = 0.125f;
@@ -142,7 +146,7 @@ public class RunnerGame extends ApplicationAdapter {
 		blackmask.boundingBox.width = viewportWidth;
 		blackmask.boundingBox.height = viewportHeight;
 		blackmask.texture = gameAssets.textures.get("blackmask");
-		blackmask.isVisible =  false;
+		blackmask.isVisible =  true;
 
 		runner = createRunner();
 		initRunner(runner);
@@ -159,7 +163,6 @@ public class RunnerGame extends ApplicationAdapter {
 		menuScene.figures.add(backgroundTop);
 		menuScene.figures.add(backgroundBottom);
 		menuScene.figures.add(title);
-		//menuScene.figures.add(help);
 		menuScene.figures.addAll(createMenuButtons());
 		menuScene.figures.addAll(soundOnOffIcons);
 
@@ -175,6 +178,7 @@ public class RunnerGame extends ApplicationAdapter {
 		ArrayList<Figure> pausePlayButtons = createPausePlayIcons();
 		gameScene.figures.add(pausePlayButtons.get(0));
 		gameScene.figures.add(blackmask);
+		gameScene.figures.add(help);
 		gameScene.figures.add(pausePlayButtons.get(1));
 
 		gameOverScene = new Scene();
@@ -256,6 +260,8 @@ public class RunnerGame extends ApplicationAdapter {
 			public void action() {
 				inMenu = false;
 				inGame = true;
+				showHelp(true);
+				help.isVisible = true;
 				score = 0;
 				scoreString = "0";
 				initRunner(runner);
@@ -263,7 +269,6 @@ public class RunnerGame extends ApplicationAdapter {
 				rearrangePlatforms();
 				rearrangeCoins();
 				currentScene = gameScene;
-				soundManager.playMusic();
 			}
 		});
 		buttons.add(startButton);
@@ -321,7 +326,7 @@ public class RunnerGame extends ApplicationAdapter {
 		pause.setClickHandler(new ClickHandler() {
 			@Override
 			public void action() {
-				blackmask.isVisible =  true;
+				blackmask.isVisible = true;
 				isPause = true;
 				play.isVisible = true;
 				pause.isVisible = false;
@@ -560,16 +565,6 @@ public class RunnerGame extends ApplicationAdapter {
 		regularFont.draw(batch, glyphLayout, (viewportWidth - glyphLayout.width) / 2, viewportHeight - padding);
 	}
 
-	private void drawTitle(){
-        float sx = regularFont.getScaleX();
-        float sy = regularFont.getScaleX();
-        regularFont.getData().setScale(sx * 2f, sy * 2f);
-        glyphLayout.setText(regularFont, "ROOF RUNNER");
-        regularFont.draw(batch, glyphLayout, (viewportWidth - glyphLayout.width) / 2,
-				viewportHeight / 2 + (viewportHeight / 2 - glyphLayout.height) / 2 + glyphLayout.height);
-        regularFont.getData().setScale(sx, sy);
-	}
-
 	private void drawGameOver(){
 		// TODO: fix objects allocation.
         float sx = regularFont.getScaleX();
@@ -602,7 +597,7 @@ public class RunnerGame extends ApplicationAdapter {
 
 	void doLogicStep() {
 
-		if (isPause)
+		if (isPause || isHelp)
 			return;
 
 		currentScene.tick(ticks);
@@ -692,6 +687,12 @@ public class RunnerGame extends ApplicationAdapter {
 
 	private void onTouch(float x, float y) {
 
+		if (isHelp){
+			showHelp(false);
+			soundManager.playMusic();
+			return;
+		}
+
 		ArrayList<Figure> touchedFigures = getTouchedFigure(currentScene.figures, x, y);
 		for(Figure f : touchedFigures) {
 			if (f.click())
@@ -754,7 +755,7 @@ public class RunnerGame extends ApplicationAdapter {
 		batch.dispose();
 	}
 
-	void disposeNoSounds(){
+	void disposeNoSounds() {
 		dispose(true);
 	}
 
@@ -782,5 +783,11 @@ public class RunnerGame extends ApplicationAdapter {
 
 	private void centerFigureHorizontally(Figure f){
 		f.boundingBox.x = (viewportWidth - f.boundingBox.width) / 2;
+	}
+
+	private void showHelp(boolean v){
+		isHelp = v;
+		help.isVisible = v;
+		blackmask.isVisible = v;
 	}
 }
