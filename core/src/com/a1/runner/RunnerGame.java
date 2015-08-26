@@ -38,11 +38,7 @@ public class RunnerGame extends ApplicationAdapter {
 	Sprite blackmask;
 	Sprite help;
 
-	int level2 = 25;
-	int level3 = 50;
-	int level4 = 75;
-	int level5 = 100;
-
+	final int levelSwitchDelta = 10;
 	int score;
 	String scoreString;
     int bestScore;
@@ -231,9 +227,6 @@ public class RunnerGame extends ApplicationAdapter {
 
 		if (inGame) {
 			drawScore();
-		}
-		else if (inMenu){
-			//drawTitle();
 		}
 		else if (inGameOver){
 			drawGameOver();
@@ -428,16 +421,9 @@ public class RunnerGame extends ApplicationAdapter {
 				p.setBlocksCount(blocksCount);
 				p.boundingBox.x = (int)(lastp.boundingBox.x + lastp.boundingBox.width + Platform.minDistance + Math.random() * Platform.maxDistance);
 				p.boundingBox.width = Platform.blockWidth * blocksCount;
-
-				if (runner.gatheredCoins >= level2)
-					p.setKind(1);
-				if (runner.gatheredCoins >= level3)
-					p.setKind(2);
-				if (runner.gatheredCoins >= level4)
-					p.setKind(3);
-				if (runner.gatheredCoins >= level5)
-					p.setKind(4);
-
+				int k = ((runner.gatheredCoins / levelSwitchDelta)) % 9;
+				if (k > 4) k = 9 - k;
+				p.setKind(k);
 				platforms.remove(0);
 				platforms.add(p);
 			}
@@ -496,7 +482,7 @@ public class RunnerGame extends ApplicationAdapter {
 
             int ci = (int)(Math.random() * availableCoins.size());
 			Coin coin = availableCoins.get(ci);
-            double probability = coin.isSuper ? 0.1/*0.0002*/ : 0.5;
+            double probability = coin.isSuper ? 0.0002 : 0.5;
             double v = Math.random();
             if (v < probability) {
                 Platform p = (Platform)this.platforms[i].get(this.platforms[i].size() - 1);
@@ -544,7 +530,7 @@ public class RunnerGame extends ApplicationAdapter {
 			for (int j = 0; j < platforms[i].size(); j++){
 				Platform p = (Platform) platforms[i].get(j);
 				p.boundingBox.x = leftSceneEdgePosX;
-				p.setKind(4);
+				p.setKind(0);
 			}
 		}
 
@@ -641,20 +627,14 @@ public class RunnerGame extends ApplicationAdapter {
 
 			float bottom = -this.runner.boundingBox.height * 3;
 			if (this.runner.boundingBox.y < bottom) {
-				this.runner.boundingBox.y = viewportHeight;
-                //onGameOver();
+				//this.runner.boundingBox.y = viewportHeight;
+                onGameOver();
 			}
 
-			runner.speed = runner.initSpeed;
 			float speedDelta = 0.25f;
-			if (runner.gatheredCoins >= level2)
-				runner.speed = runner.initSpeed + speedDelta;
-			if (runner.gatheredCoins >= level3)
-				runner.speed = runner.initSpeed + speedDelta * 2;
-			if (runner.gatheredCoins >= level4)
-				runner.speed = runner.initSpeed + speedDelta * 3;
-			if (runner.gatheredCoins >= level5)
-				runner.speed = runner.initSpeed + speedDelta * 4;
+			int l = runner.gatheredCoins / levelSwitchDelta;
+			if (l > 4) l = 4;
+			runner.speed = runner.initSpeed + l * speedDelta;
 		}
 	}
 
@@ -697,7 +677,7 @@ public class RunnerGame extends ApplicationAdapter {
 				return;
 		}
 
-		if (this.inGame) {
+		if (this.inGame && !isPause) {
 			this.runner.jump();
 		}
 		else if (this.inGameOver) {
