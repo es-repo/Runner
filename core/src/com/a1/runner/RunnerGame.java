@@ -35,11 +35,12 @@ public class RunnerGame extends ApplicationAdapter {
 	Runner runner;
 	Background backgroundTop;
 	Background backgroundBottom;
+	Sprite blackmask;
 
-	int level2 = 10;//25;
-	int level3 = 20;//50;
-	int level4 = 30;//75;
-	int level5 = 40;//100;
+	int level2 = 25;
+	int level3 = 50;
+	int level4 = 75;
+	int level5 = 100;
 
 	int score;
 	String scoreString;
@@ -137,6 +138,12 @@ public class RunnerGame extends ApplicationAdapter {
 		backgroundTop.boundingBox.y = viewportHeight - backgroundTop.boundingBox.height;
 		backgroundBottom = new Background(gameAssets, viewportWidth, 160, "background.bottom");
 
+		blackmask = new Sprite();
+		blackmask.boundingBox.width = viewportWidth;
+		blackmask.boundingBox.height = viewportHeight;
+		blackmask.texture = gameAssets.textures.get("blackmask");
+		blackmask.isVisible =  false;
+
 		runner = createRunner();
 		initRunner(runner);
 
@@ -164,8 +171,11 @@ public class RunnerGame extends ApplicationAdapter {
 			gameScene.figures.addAll(platformsLevel);
 		gameScene.figures.addAll(coins);
 		gameScene.figures.add(runner);
-		gameScene.figures.addAll(createPausePlayIcons());
 		gameScene.figures.addAll(soundOnOffIcons);
+		ArrayList<Figure> pausePlayButtons = createPausePlayIcons();
+		gameScene.figures.add(pausePlayButtons.get(0));
+		gameScene.figures.add(blackmask);
+		gameScene.figures.add(pausePlayButtons.get(1));
 
 		gameOverScene = new Scene();
 		gameOverScene.figures.add(backgroundTop);
@@ -311,6 +321,7 @@ public class RunnerGame extends ApplicationAdapter {
 		pause.setClickHandler(new ClickHandler() {
 			@Override
 			public void action() {
+				blackmask.isVisible =  true;
 				isPause = true;
 				play.isVisible = true;
 				pause.isVisible = false;
@@ -328,6 +339,7 @@ public class RunnerGame extends ApplicationAdapter {
 		play.setClickHandler(new ClickHandler() {
 			@Override
 			public void action() {
+				blackmask.isVisible =  false;
 				isPause = false;
 				play.isVisible = false;
 				pause.isVisible = true;
@@ -352,6 +364,8 @@ public class RunnerGame extends ApplicationAdapter {
 		on.setClickHandler(new ClickHandler() {
 			@Override
 			public void action() {
+				if (isPause)
+					return;
 				on.isVisible = false;
 				off.isVisible = true;
 				soundOff();
@@ -367,6 +381,8 @@ public class RunnerGame extends ApplicationAdapter {
 		off.setClickHandler(new ClickHandler() {
 			@Override
 			public void action() {
+				if (isPause)
+					return;
 				on.isVisible = true;
 				off.isVisible = false;
 				soundOn();
