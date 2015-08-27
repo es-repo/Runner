@@ -71,6 +71,8 @@ public class GameAssets {
         textures.put("buttons.topscores_pressed", "buttons/topscores_pressed.png");
         textures.put("buttons.rate", "buttons/rate.png");
         textures.put("buttons.rate_pressed", "buttons/rate_pressed.png");
+        textures.put("buttons.ok", "buttons/ok.png");
+        textures.put("buttons.ok_pressed", "buttons/ok_pressed.png");
 
         textures.put("quit_dialog.frame", "quit_dialog/frame.png");
         textures.put("quit_dialog.buttons.yes", "quit_dialog/buttons/yes.png");

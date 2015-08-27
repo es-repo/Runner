@@ -56,8 +56,6 @@ public class Runner extends Sprite {
                 soundManager.playSound("step", 0.6f);
             }
         }
-
-
     }
 
     public void jump() {
