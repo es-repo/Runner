@@ -3,9 +3,6 @@ package com.a1.runner;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.InputAdapter;
-import com.badlogic.gdx.InputMultiplexer;
-import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -41,8 +38,12 @@ public class RunnerGame extends ApplicationAdapter {
 	Background backgroundBottom;
 	Sprite blackmask;
 	Sprite help;
+	Sprite pause;
+	Sprite resume;
 
-	final int levelSwitchDelta = 25;
+	QuitDialog quitDialog;
+
+	final int levelSwitchDelta = 10;
 	int score;
 	String scoreString;
 	int bestScore;
@@ -88,7 +89,6 @@ public class RunnerGame extends ApplicationAdapter {
 	@Override
 	public void create () {
 
-		// TODO: add back button handler
 		// TODO: music disappear after back button.
 		// TODO: tweak sound volume
 		// TODO: set ads
@@ -142,11 +142,23 @@ public class RunnerGame extends ApplicationAdapter {
 		backgroundTop.boundingBox.y = viewportHeight - backgroundTop.boundingBox.height;
 		backgroundBottom = new Background(gameAssets, viewportWidth, 160, "background.bottom");
 
+		quitDialog = new QuitDialog(gameAssets, viewportWidth, viewportHeight);
+		quitDialog.setCloseHandler(new EventHandler() {
+			@Override
+			public void action(int value) {
+				if (value == 1)
+					Gdx.app.exit();
+				else if (value == 0 && !inGame){
+					resumeGame();
+				}
+			}
+		});
+
 		blackmask = new Sprite();
 		blackmask.boundingBox.width = viewportWidth;
 		blackmask.boundingBox.height = viewportHeight;
 		blackmask.texture = gameAssets.textures.get("blackmask");
-		blackmask.isVisible =  true;
+		blackmask.isVisible = false;
 
 		runner = createRunner();
 		initRunner(runner);
@@ -164,7 +176,9 @@ public class RunnerGame extends ApplicationAdapter {
 		menuScene.figures.add(backgroundBottom);
 		menuScene.figures.add(title);
 		menuScene.figures.addAll(createMenuButtons());
+		menuScene.figures.add(blackmask);
 		menuScene.figures.addAll(soundOnOffIcons);
+		menuScene.figures.add(quitDialog);
 
 		gameScene = new Scene();
 		gameScene.figures.add(backgroundTop);
@@ -174,17 +188,20 @@ public class RunnerGame extends ApplicationAdapter {
 			gameScene.figures.addAll(platformsLevel);
 		gameScene.figures.addAll(coins);
 		gameScene.figures.add(runner);
-		ArrayList<Figure> pausePlayButtons = createPausePlayIcons();
+		ArrayList<Figure> pausePlayButtons = createPauseResumeIcons();
 		gameScene.figures.add(pausePlayButtons.get(0));
 		gameScene.figures.add(blackmask);
 		gameScene.figures.addAll(soundOnOffIcons);
 		gameScene.figures.add(help);
 		gameScene.figures.add(pausePlayButtons.get(1));
+		gameScene.figures.add(quitDialog);
 
 		gameOverScene = new Scene();
 		gameOverScene.figures.add(backgroundTop);
 		gameOverScene.figures.add(backgroundBottom);
+		gameOverScene.figures.add(blackmask);
 		gameOverScene.figures.addAll(soundOnOffIcons);
+		gameOverScene.figures.add(quitDialog);
 
 		currentScene = menuScene;
 
@@ -217,8 +234,10 @@ public class RunnerGame extends ApplicationAdapter {
 	public void render() {
 
 		if (Gdx.input.isKeyPressed(Input.Keys.BACK)){
-			Gdx.app.exit();
-			return;
+			if (!quitDialog.isVisible) {
+				pauseGame();
+				quitDialog.show();
+			}
 		}
 
 		if (Gdx.input.justTouched()) {
@@ -237,14 +256,15 @@ public class RunnerGame extends ApplicationAdapter {
 
 		renderer.drawScene(currentScene);
 
-		if (inMenu){
-			drawCredits();
-		}
-		if (inGame) {
-			drawScore();
-		}
-		else if (inGameOver){
-			drawGameOver();
+		if (!quitDialog.isVisible) {
+			if (inMenu) {
+				drawCredits();
+			}
+			if (inGame) {
+				drawScore();
+			} else if (inGameOver) {
+				drawGameOver();
+			}
 		}
 
 		batch.end();
@@ -265,9 +285,9 @@ public class RunnerGame extends ApplicationAdapter {
 		startButton.boundingBox.height = buttonHeight;
 		startButton.boundingBox.y = y;
 		centerFigureHorizontally(startButton);
-		startButton.setClickHandler(new ClickHandler() {
+		startButton.setClickHandler(new EventHandler() {
 			@Override
-			public void action() {
+			public void action(int value) {
 				inMenu = false;
 				inGame = true;
 				showHelp(true);
@@ -290,9 +310,9 @@ public class RunnerGame extends ApplicationAdapter {
 			topScoresButton.boundingBox.height = buttonHeight;
 			topScoresButton.boundingBox.y = y;
 			centerFigureHorizontally(topScoresButton);
-			topScoresButton.setClickHandler(new ClickHandler() {
+			topScoresButton.setClickHandler(new EventHandler() {
 				@Override
-				public void action() {
+				public void action(int value) {
 //					if (gameServices.getSignedIn()) {
 //						gameServices.showLeaderboard();
 //					} else {
@@ -309,9 +329,9 @@ public class RunnerGame extends ApplicationAdapter {
 		rateButton.boundingBox.height = buttonHeight;
 		rateButton.boundingBox.y = y;
 		centerFigureHorizontally(rateButton);
-		rateButton.setClickHandler(new ClickHandler() {
+		rateButton.setClickHandler(new EventHandler() {
 			@Override
-			public void action() {
+			public void action(int value) {
 //					if (gameServices.getSignedIn()) {
 //						gameServices.showLeaderboard();
 //					} else {
@@ -323,47 +343,55 @@ public class RunnerGame extends ApplicationAdapter {
 		return buttons;
 	}
 
-	private ArrayList<Figure> createPausePlayIcons(){
+	private ArrayList<Figure> createPauseResumeIcons(){
 		ArrayList<Figure> icons = new ArrayList<Figure>();
 
-		final Sprite pause = new Sprite();
-		final Sprite play = new Sprite();
+		pause = new Sprite();
+		resume = new Sprite();
 
 		pause.texture = gameAssets.textures.get("pause");
 		pause.boundingBox.width = pause.boundingBox.height = iconSize;
 		pause.boundingBox.x = viewportWidth - iconSize;
 		pause.boundingBox.y = viewportHeight - iconSize - padding;
-		pause.setClickHandler(new ClickHandler() {
+		pause.setClickHandler(new EventHandler() {
 			@Override
-			public void action() {
-				blackmask.isVisible = true;
-				isPause = true;
-				play.isVisible = true;
-				pause.isVisible = false;
-				soundManager.pauseMusic();
+			public void action(int value) {
+				pauseGame();
 			}
 		});
 		icons.add(pause);
 
 		float playSize = iconSize * 2;
-		play.texture = gameAssets.textures.get("play");
-		play.boundingBox.width = play.boundingBox.height = playSize;
-		play.boundingBox.x = (viewportWidth - playSize) / 2;
-		play.boundingBox.y = (viewportHeight - playSize) / 2;
-		play.isVisible = false;
-		play.setClickHandler(new ClickHandler() {
+		resume.texture = gameAssets.textures.get("play");
+		resume.boundingBox.width = resume.boundingBox.height = playSize;
+		resume.boundingBox.x = (viewportWidth - playSize) / 2;
+		resume.boundingBox.y = (viewportHeight - playSize) / 2;
+		resume.isVisible = false;
+		resume.setClickHandler(new EventHandler() {
 			@Override
-			public void action() {
-				blackmask.isVisible =  false;
-				isPause = false;
-				play.isVisible = false;
-				pause.isVisible = true;
-				soundManager.playMusic();
-			}
+			public void action(int value) {
+				resumeGame(); }
 		});
-		icons.add(play);
+		icons.add(resume);
 
 		return icons;
+	}
+	
+	private void pauseGame(){
+		blackmask.isVisible = true;
+		isPause = true;
+		resume.isVisible = true;
+		pause.isVisible = false;
+		soundManager.pauseMusic();
+	}
+
+	private void resumeGame(){
+		blackmask.isVisible =  false;
+		isPause = false;
+		resume.isVisible = false;
+		pause.isVisible = true;
+		if (inGame)
+			soundManager.playMusic();
 	}
 
 	private ArrayList<Figure> createSoundOnOffIcons(){
@@ -376,9 +404,9 @@ public class RunnerGame extends ApplicationAdapter {
 		on.boundingBox.width = on.boundingBox.height = iconSize;
 		on.boundingBox.x = viewportWidth - iconSize;
 		on.isVisible = !soundOff;
-		on.setClickHandler(new ClickHandler() {
+		on.setClickHandler(new EventHandler() {
 			@Override
-			public void action() {
+			public void action(int value) {
 				on.isVisible = false;
 				off.isVisible = true;
 				soundOff();
@@ -391,9 +419,9 @@ public class RunnerGame extends ApplicationAdapter {
 		off.boundingBox.x = viewportWidth - iconSize;
 		off.isVisible = soundOff;
 
-		off.setClickHandler(new ClickHandler() {
+		off.setClickHandler(new EventHandler() {
 			@Override
-			public void action() {
+			public void action(int value) {
 				on.isVisible = true;
 				off.isVisible = false;
 				soundOn();
@@ -583,7 +611,6 @@ public class RunnerGame extends ApplicationAdapter {
 				viewportHeight / 2 + (viewportHeight / 2 - glyphLayout.height) / 2 + glyphLayout.height);
 		regularFont.getData().setScale(sx, sy);
 
-
 		glyphLayout.setText(regularFont, "your best: ");
 		float width = glyphLayout.width;
 		glyphLayout.setText(regularFont, bestScoreString);
@@ -606,6 +633,11 @@ public class RunnerGame extends ApplicationAdapter {
 	}
 
 	void doLogicStep() {
+
+		if (quitDialog.isVisible) {
+			quitDialog.tick(ticks);
+			return;
+		}
 
 		if (isPause || isHelp)
 			return;
@@ -692,13 +724,14 @@ public class RunnerGame extends ApplicationAdapter {
 
 	private void onTouch(float x, float y) {
 
-		if (isHelp){
+		if (isHelp && !quitDialog.isVisible){
 			showHelp(false);
 			soundManager.playMusic();
 			return;
 		}
 
-		ArrayList<Figure> touchedFigures = getTouchedFigure(currentScene.figures, x, y);
+		touchedFigures.clear();
+		getTouchedFigure(currentScene.figures, x, y, touchedFigures);
 		for(int i = 0; i < touchedFigures.size(); i++) {
 			if (touchedFigures.get(i).click())
 				return;
@@ -716,14 +749,16 @@ public class RunnerGame extends ApplicationAdapter {
 		}
 	}
 
-	private ArrayList<Figure> getTouchedFigure(ArrayList<Figure> figures, float x, float y) {
-		touchedFigures.clear();
-		for(int i = 0; i < figures.size(); i++){
+	private void getTouchedFigure(ArrayList<Figure> figures, float x, float y,  ArrayList<Figure> touchedFigures) {
+		for(int i = figures.size() - 1; i >= 0; i--){
 			Figure f = figures.get(i);
-			if (f.isVisible && f.boundingBox.contains(x, y))
-				touchedFigures.add(f);
+			if (f.isVisible) {
+				if (f instanceof ComposedFigure)
+					getTouchedFigure(((ComposedFigure) f).figures, x - f.boundingBox.x, y - f.boundingBox.y, touchedFigures);
+				else if (f.boundingBox.contains(x, y))
+					touchedFigures.add(f);
+			}
 		}
-		return touchedFigures;
 	}
 
 	private void tryShowAds(){

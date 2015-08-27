@@ -72,6 +72,12 @@ public class GameAssets {
         textures.put("buttons.rate", "buttons/rate.png");
         textures.put("buttons.rate_pressed", "buttons/rate_pressed.png");
 
+        textures.put("quit_dialog.frame", "quit_dialog/frame.png");
+        textures.put("quit_dialog.buttons.yes", "quit_dialog/buttons/yes.png");
+        textures.put("quit_dialog.buttons.yes_pressed", "quit_dialog/buttons/yes_pressed.png");
+        textures.put("quit_dialog.buttons.no", "quit_dialog/buttons/no.png");
+        textures.put("quit_dialog.buttons.no_pressed", "quit_dialog/buttons/no_pressed.png");
+
         for (Map.Entry<String, String> entry : textures.entrySet())	{
             this.textures.put(entry.getKey(), new Texture(Gdx.files.internal("textures/" + entry.getValue())));
         }

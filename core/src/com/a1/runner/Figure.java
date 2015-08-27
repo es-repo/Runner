@@ -6,7 +6,7 @@ import com.badlogic.gdx.math.Vector3;
 
 public class Figure {
 
-    private ClickHandler clickHandler;
+    private EventHandler clickHandler;
 
     public String id;
     public Rectangle boundingBox = new Rectangle();
@@ -14,7 +14,7 @@ public class Figure {
     public Color color = Color.WHITE;
     public boolean isVisible = true;
 
-    public void setClickHandler(ClickHandler handler){
+    public void setClickHandler(EventHandler handler){
         clickHandler = handler;
     }
 
@@ -23,7 +23,7 @@ public class Figure {
 
     public boolean click(){
         if (clickHandler != null){
-            clickHandler.action();
+            clickHandler.action(0);
             return true;
         }
         return false;
