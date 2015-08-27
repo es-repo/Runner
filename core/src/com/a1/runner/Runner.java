@@ -9,7 +9,7 @@ public class Runner extends Sprite {
     SoundManager soundManager;
     public float initSpeed = 4f;
     public float speed = initSpeed;
-    public float gravyAcc = -0.35f;
+    public float gravyAcc = -0.4f;
     public float jumpAcc = 5.525f;
     public int gatheredCoins = 0;
 
