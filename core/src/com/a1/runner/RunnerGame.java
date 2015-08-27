@@ -43,7 +43,7 @@ public class RunnerGame extends ApplicationAdapter {
 
 	QuitDialog quitDialog;
 
-	final int levelSwitchDelta = 10;
+	final int levelSwitchDelta = 25;
 	int score;
 	String scoreString;
 	int bestScore;
@@ -89,8 +89,6 @@ public class RunnerGame extends ApplicationAdapter {
 	@Override
 	public void create () {
 
-		// TODO: music disappear after back button.
-		// TODO: tweak sound volume
 		// TODO: set ads
 		// TODO: rating
 		// TODO: test on all android versions
@@ -196,16 +194,33 @@ public class RunnerGame extends ApplicationAdapter {
 		gameScene.figures.add(pausePlayButtons.get(1));
 		gameScene.figures.add(quitDialog);
 
+		Button okButton = new Button(gameAssets.textures.get("buttons.ok"), gameAssets.textures.get("buttons.ok_pressed"));
+		okButton.boundingBox.width = 86 * 0.9f;
+		okButton.boundingBox.height = 32 * 0.9f;
+		okButton.boundingBox.x = (viewportWidth - okButton.boundingBox.width) / 2;
+		okButton.boundingBox.y = 25;
+		okButton.setClickHandler(new EventHandler() {
+			@Override
+			public void action(int value) {
+				inMenu = true;
+				inGameOver = false;
+				soundManager.playSound("start", 0.3f);
+				currentScene = menuScene;
+				tryShowAds();
+			}
+		});
+
 		gameOverScene = new Scene();
 		gameOverScene.figures.add(backgroundTop);
 		gameOverScene.figures.add(backgroundBottom);
+		gameOverScene.figures.add(okButton);
 		gameOverScene.figures.add(blackmask);
 		gameOverScene.figures.addAll(soundOnOffIcons);
 		gameOverScene.figures.add(quitDialog);
 
 		currentScene = menuScene;
 
-		soundManager.playSound("start", 0.5f);
+		soundManager.playSound("start", 0.3f);
 
 		Gdx.input.setCatchBackKey(true);
 	}
@@ -609,7 +624,8 @@ public class RunnerGame extends ApplicationAdapter {
 		glyphLayout.setText(regularFont, "GAME OVER");
 		regularFont.draw(batch, glyphLayout, (viewportWidth - glyphLayout.width) / 2,
 				viewportHeight / 2 + (viewportHeight / 2 - glyphLayout.height) / 2 + glyphLayout.height);
-		regularFont.getData().setScale(sx, sy);
+
+		regularFont.getData().setScale(sx * 0.95f, sy * 0.95f);
 
 		glyphLayout.setText(regularFont, "your best: ");
 		float width = glyphLayout.width;
@@ -618,7 +634,7 @@ public class RunnerGame extends ApplicationAdapter {
 		float xs = (viewportWidth - width) / 2;
 		float xe = (viewportWidth + width) / 2;
 
-		float y = viewportHeight / 2;
+		float y = viewportHeight / 2 + glyphLayout.height / 2;
 		glyphLayout.setText(regularFont, "score:");
 		regularFont.draw(batch, glyphLayout, xs, y);
 		String score = String.valueOf(runner.gatheredCoins);
@@ -630,6 +646,8 @@ public class RunnerGame extends ApplicationAdapter {
 		regularFont.draw(batch, glyphLayout, xs, y);
 		glyphLayout.setText(regularFont, bestScoreString);
 		regularFont.draw(batch, glyphLayout, xe - glyphLayout.width, y);
+
+		regularFont.getData().setScale(sx, sy);
 	}
 
 	void doLogicStep() {
@@ -701,7 +719,7 @@ public class RunnerGame extends ApplicationAdapter {
 		this.inGameOver = true;
 		this.inGame = false;
 		soundManager.stopMusic();
-		soundManager.playSound("death", 0.5f);
+		soundManager.playSound("death", 0.3f);
 		currentScene = gameOverScene;
 
 		try{
@@ -739,13 +757,6 @@ public class RunnerGame extends ApplicationAdapter {
 
 		if (this.inGame && !isPause) {
 			this.runner.jump();
-		}
-		else if (this.inGameOver) {
-			this.inMenu = true;
-			this.inGameOver = false;
-			soundManager.playSound("start", 0.5f);
-			currentScene = menuScene;
-			tryShowAds();
 		}
 	}
 
