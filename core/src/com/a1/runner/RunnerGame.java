@@ -195,8 +195,8 @@ public class RunnerGame extends ApplicationAdapter {
 		gameScene.figures.add(quitDialog);
 
 		Button okButton = new Button(gameAssets.textures.get("buttons.ok"), gameAssets.textures.get("buttons.ok_pressed"));
-		okButton.boundingBox.width = 86 * 0.9f;
-		okButton.boundingBox.height = 32 * 0.9f;
+		okButton.boundingBox.width = 87 * 0.9f;
+		okButton.boundingBox.height = 30 * 0.9f;
 		okButton.boundingBox.x = (viewportWidth - okButton.boundingBox.width) / 2;
 		okButton.boundingBox.y = 25;
 		okButton.setClickHandler(new EventHandler() {
