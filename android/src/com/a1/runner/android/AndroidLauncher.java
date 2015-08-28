@@ -7,6 +7,7 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.view.WindowManager;
 
+import com.a1.runner.ApplicationController;
 import com.a1.runner.GameServices;
 import com.a1.runner.IAdsController;
 import com.badlogic.gdx.Gdx;
@@ -19,7 +20,7 @@ import com.google.android.gms.ads.InterstitialAd;
 import com.google.android.gms.games.Games;
 import com.google.example.games.basegameutils.GameHelper;
 
-public class AndroidLauncher extends AndroidApplication implements IAdsController, GameHelper.GameHelperListener, GameServices {
+public class AndroidLauncher extends AndroidApplication implements IAdsController, ApplicationController, GameHelper.GameHelperListener, GameServices {
 
 	private static final String INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-5519384153835422/6795093799";
 
@@ -44,7 +45,7 @@ public class AndroidLauncher extends AndroidApplication implements IAdsControlle
 		AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
 		config.useAccelerometer = false;
 		config.useCompass = false;
-		initialize(new RunnerGame(this, this), config);
+		initialize(new RunnerGame(this, this, this), config);
 
 		gameHelper.setup(this);
 
@@ -104,6 +105,12 @@ public class AndroidLauncher extends AndroidApplication implements IAdsControlle
 		});
 
 		return true;
+	}
+
+	@Override
+	public void killApp() {
+		finish();
+		System.exit(0);
 	}
 
 	@Override

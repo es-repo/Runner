@@ -66,6 +66,7 @@ public class RunnerGame extends ApplicationAdapter {
 	boolean isPause;
 	boolean isHelp;
 
+	ApplicationController appControler;
 	IAdsController adsController;
 	boolean adsEnabled = false;
 	int adsShowingIntervalInSec = 90;
@@ -79,8 +80,8 @@ public class RunnerGame extends ApplicationAdapter {
 	Scene gameOverScene;
 	Scene currentScene;
 
-	public RunnerGame(IAdsController adsController, GameServices actionResolver){
-
+	public RunnerGame(ApplicationController appControler, IAdsController adsController, GameServices actionResolver){
+		this.appControler = appControler;
 		this.adsController = adsController;
 		this.gameServices = actionResolver;
 		this.gameServices.setGameServicesEnabled(gameServicesEnabled);
@@ -145,7 +146,7 @@ public class RunnerGame extends ApplicationAdapter {
 			@Override
 			public void action(int value) {
 				if (value == 1)
-					Gdx.app.exit();
+					appControler.killApp();
 				else if (value == 0 && !inGame){
 					resumeGame();
 				}
