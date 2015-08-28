@@ -68,8 +68,8 @@ public class RunnerGame extends ApplicationAdapter {
 
 	ApplicationController appControler;
 	IAdsController adsController;
-	boolean adsEnabled = false;
-	int adsShowingIntervalInSec = 90;
+	boolean adsEnabled = true;
+	int adsShowingIntervalInSec = 1;
 	int lastAdsShowingTime;
 
 	GameServices gameServices;
@@ -782,15 +782,8 @@ public class RunnerGame extends ApplicationAdapter {
 			if (now - lastAdsShowingTime < adsShowingIntervalInSec)
 				return;
 
-			adsController.showInterstitialAd(new Runnable() {
-				@Override
-				public void run() {
-					//Gdx.app.exit();
-					lastAdsShowingTime = (int)(System.currentTimeMillis() / 1000);
-					// Game  activity will be restarted after the ads closing so force to call dispose.
-					//disposeNoSounds();
-				}
-			});
+			lastAdsShowingTime = (int)(System.currentTimeMillis() / 1000);
+			adsController.showInterstitialAd();
 		}
 		catch(Exception e){
 			// don't fail the game.
@@ -806,10 +799,6 @@ public class RunnerGame extends ApplicationAdapter {
 	void dispose(boolean noSounds) {
 		gameAssets.dispose(noSounds);
 		batch.dispose();
-	}
-
-	void disposeNoSounds() {
-		dispose(true);
 	}
 
 	private void soundOn(){

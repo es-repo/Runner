@@ -22,7 +22,7 @@ import com.google.example.games.basegameutils.GameHelper;
 
 public class AndroidLauncher extends AndroidApplication implements IAdsController, ApplicationController, GameHelper.GameHelperListener, GameServices {
 
-	private static final String INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-5519384153835422/6795093799";
+	private static final String INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-8413752460507538/7397472406";
 
 	InterstitialAd interstitialAd;
 	GameHelper gameHelper;
@@ -65,11 +65,16 @@ public class AndroidLauncher extends AndroidApplication implements IAdsControlle
 	}
 
 	public void setupAds() {
-//		interstitialAd = new InterstitialAd(this);
-//		interstitialAd.setAdUnitId(INTERSTITIAL_AD_UNIT_ID);
-//		AdRequest.Builder builder = new AdRequest.Builder();
-//		AdRequest ad = builder.build();
-//		interstitialAd.loadAd(ad);
+		interstitialAd = new InterstitialAd(this);
+		interstitialAd.setAdUnitId(INTERSTITIAL_AD_UNIT_ID);
+		AdRequest.Builder builder = new AdRequest.Builder();
+		AdRequest ad = builder.build();
+		try {
+			interstitialAd.loadAd(ad);
+		}
+		catch (Exception e){
+			e.printStackTrace();
+		}
 	}
 
 	private boolean isWifiConnected() {
@@ -80,31 +85,28 @@ public class AndroidLauncher extends AndroidApplication implements IAdsControlle
 	}
 
 	@Override
-	public boolean showInterstitialAd(final Runnable then) {
+	public void showInterstitialAd() {
 
 		if (!isWifiConnected())
-			return false;
+			return;
 
 		runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
-
-				if (then != null) {
-					interstitialAd.setAdListener(new AdListener() {
-						@Override
-						public void onAdClosed() {
-							Gdx.app.postRunnable(then);
-							AdRequest.Builder builder = new AdRequest.Builder();
-							AdRequest ad = builder.build();
-							interstitialAd.loadAd(ad);
-						}
-					});
+				if (interstitialAd.isLoaded()) {
+					interstitialAd.show();
+			  	}
+			 	else {
+					AdRequest interstitialRequest = new AdRequest.Builder().build();
+					try {
+						interstitialAd.loadAd(interstitialRequest);
+					}
+					catch (Exception e){
+						e.printStackTrace();
+					}
 				}
-				interstitialAd.show();
 			}
 		});
-
-		return true;
 	}
 
 	@Override
