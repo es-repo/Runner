@@ -90,7 +90,6 @@ public class RunnerGame extends ApplicationAdapter {
 	@Override
 	public void create () {
 
-		// TODO: consider add more coins
 		// TODO: top scores
 		// TODO: test on all android versions
 		lastAdsShowingTime = (int)(System.currentTimeMillis() / 1000);
@@ -535,6 +534,7 @@ public class RunnerGame extends ApplicationAdapter {
 		}
 		Coin superCoin = coins.get(coinsCount - 1);
 		superCoin.boundingBox.height = superCoin.boundingBox.width = Coin.superSize;
+		superCoin.sound = gameAssets.sounds.get("supercoin");
 		superCoin.isSuper = true;
 		superCoin.texture = gameAssets.textures.get("supercoin");
 		return coins;
@@ -594,7 +594,7 @@ public class RunnerGame extends ApplicationAdapter {
 			if (this.runner.isNearCoin(c)) {
 				this.runner.gatheredCoins+= c.isSuper ? 10 : 1;
 				c.boundingBox.x = leftSceneEdgePosX;
-				soundManager.playSound("coin", 0.4f);
+				soundManager.playSound(c.sound, 0.35f);
 				break;
 			}
 		}

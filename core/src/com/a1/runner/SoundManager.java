@@ -49,10 +49,14 @@ public class SoundManager {
     }
 
     public void playSound(String sn, float volume){
+        playSound(sounds.get(sn), volume);
+    }
+
+    public void playSound(Sound s, float volume){
         if (off)
             return;
         float v = commonVolume * volume;
-        sounds.get(sn).play(v);
+        s.play(v);
     }
 
     public void playMusic(){

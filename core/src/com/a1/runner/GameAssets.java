@@ -88,7 +88,8 @@ public class GameAssets {
             return;
 
         HashMap<String, String> sounds = new HashMap<String, String>();
-        sounds.put("coin", "coin.mp3");
+        sounds.put("coin", "coin.wav");
+        sounds.put("supercoin", "supercoin.wav");
         sounds.put("death", "death.wav");
         sounds.put("jump", "jump.wav");
         sounds.put("start", "start.wav");
