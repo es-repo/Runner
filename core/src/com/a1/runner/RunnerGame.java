@@ -30,7 +30,7 @@ public class RunnerGame extends ApplicationAdapter {
 	float iconSize = 24;
 	float padding = 10;
 
-	int leftSceneEdgePosX = -Platform.blockWidth * 15;
+	int leftSceneEdgePosX = -Platform.blockWidth * Platform.maxBlocksCount * 2;
 	int levelPadding = Platform.blockWidth;
 	ArrayList[] platforms;
 	Runner runner;
@@ -68,7 +68,7 @@ public class RunnerGame extends ApplicationAdapter {
 
 	ApplicationController appControler;
 	IAdsController adsController;
-	boolean adsEnabled = true;
+	boolean adsEnabled = false;
 	int adsShowingIntervalInSec = 1;
 	int lastAdsShowingTime;
 
@@ -90,9 +90,10 @@ public class RunnerGame extends ApplicationAdapter {
 	@Override
 	public void create () {
 
+		// TODO: consider add more coins
+		// TODO: improve algorithm to avoid long distances
 		// TODO: top scores
 		// TODO: test on all android versions
-		// TODO: analytics
 		lastAdsShowingTime = (int)(System.currentTimeMillis() / 1000);
 
 		initPrefs();
@@ -160,10 +161,8 @@ public class RunnerGame extends ApplicationAdapter {
 		blackmask.isVisible = false;
 
 		runner = createRunner();
-		initRunner(runner);
 
 		platforms = createPlatforms();
-		rearrangePlatforms();
 
 		coins = createCoins();
 		availableCoins = new ArrayList<Coin>();
@@ -310,9 +309,9 @@ public class RunnerGame extends ApplicationAdapter {
 				help.isVisible = true;
 				score = 0;
 				scoreString = "0";
-				initRunner(runner);
 				initPlatformsAndCoinsPositions();
-				rearrangePlatforms();
+				initRunner(runner);
+				rearrangePlatforms(true);
 				rearrangeCoins();
 				currentScene = gameScene;
 			}
@@ -446,7 +445,7 @@ public class RunnerGame extends ApplicationAdapter {
 
 	private ArrayList[] createPlatforms(){
 		int levels = 4;
-		int count = 7;
+		int count = 8;
 		ArrayList[] platforms = new ArrayList[levels];
 		for (int l = 0; l < levels; l++) {
 			platforms[l] = new ArrayList();
@@ -460,22 +459,41 @@ public class RunnerGame extends ApplicationAdapter {
 		return platforms;
 	}
 
-	private void rearrangePlatforms() {
-		for (int i = 0; i < platforms.length; i++) {
-			this.rearrangePlatformsLevel(platforms[i]);
+	private void initPlatformsAndCoinsPositions(){
+		for (int i = 0; i < platforms.length; i++){
+			for (int j = 0; j < platforms[i].size(); j++){
+				Platform p = (Platform) platforms[i].get(j);
+				p.setBlocksCount(Platform.minBlocksCount);
+				p.boundingBox.x = leftSceneEdgePosX;
+				p.setKind(0);
+			}
+		}
+
+		for (int i = 0; i < coins.size(); i++){
+			Coin c = coins.get(i);
+			c.boundingBox.x = leftSceneEdgePosX;
 		}
 	}
 
-	private void rearrangePlatformsLevel(ArrayList platforms) {
+	private void rearrangePlatforms(boolean forStart) {
+		for (int i = 0; i < platforms.length; i++) {
+			this.rearrangePlatformsLevel(platforms[i], forStart && i == 0);
+		}
+	}
+
+	private void rearrangePlatformsLevel(ArrayList platforms, boolean forStart) {
+		int i = 0;
 		while (true) {
 			Platform p = (Platform)platforms.get(0);
 			Platform lastp = (Platform)platforms.get(platforms.size() - 1);
 
 			if (p.boundingBox.x <= this.leftSceneEdgePosX) {
-				int blocksCount = (int)(Platform.minBlocksCount + Math.random() * Platform.maxBlocksCount);
+				int blocksCount = forStart
+						? Platform.maxBlocksCount * 2
+						: (int)(Platform.minBlocksCount + Math.random() * Platform.maxBlocksCount);
 				p.setBlocksCount(blocksCount);
-				p.boundingBox.x = (int)(lastp.boundingBox.x + lastp.boundingBox.width + Platform.minDistance + Math.random() * Platform.maxDistance);
-				p.boundingBox.width = Platform.blockWidth * blocksCount;
+				double d = Platform.minDistance + Math.random() * Platform.maxDistance;
+				p.boundingBox.x = forStart ? 0 : (int)(lastp.boundingBox.x + lastp.boundingBox.width + d);
 				int k = ((runner.gatheredCoins / levelSwitchDelta)) % 9;
 				if (k > 4) k = 9 - k;
 				p.setKind(k);
@@ -485,6 +503,8 @@ public class RunnerGame extends ApplicationAdapter {
 			else {
 				return;
 			}
+			i++;
+			forStart = false;
 		}
 	}
 
@@ -496,7 +516,8 @@ public class RunnerGame extends ApplicationAdapter {
 
 	private void initRunner(Runner r) {
 		r.boundingBox.x = r.boundingBox.width * 3;
-		r.boundingBox.y = viewportHeight - r.boundingBox.height * 2;
+		Platform p = (Platform)platforms[0].get(0);
+		r.boundingBox.y = p.boundingBox.y + p.boundingBox.height;
 		this.runner.velocity.y = 0;
 		this.runner.speed = this.runner.initSpeed;
 		r.gatheredCoins = 0;
@@ -580,21 +601,6 @@ public class RunnerGame extends ApplicationAdapter {
 		}
 	}
 
-	private void initPlatformsAndCoinsPositions(){
-		for (int i = 0; i < platforms.length; i++){
-			for (int j = 0; j < platforms[i].size(); j++){
-				Platform p = (Platform) platforms[i].get(j);
-				p.boundingBox.x = leftSceneEdgePosX;
-				p.setKind(0);
-			}
-		}
-
-		for (int i = 0; i < coins.size(); i++){
-			Coin c = coins.get(i);
-			c.boundingBox.x = leftSceneEdgePosX;
-		}
-	}
-
 	private void drawCredits(){
 		float sx = regularFont.getScaleX();
 		float sy = regularFont.getScaleX();
@@ -666,7 +672,7 @@ public class RunnerGame extends ApplicationAdapter {
 					w.boundingBox.x -= this.runner.speed;
 				}
 			}
-			this.rearrangePlatforms();
+			this.rearrangePlatforms(false);
 
 			for (int i = 0; i < this.coins.size(); i++) {
 				this.coins.get(i).boundingBox.x -= this.runner.speed;
