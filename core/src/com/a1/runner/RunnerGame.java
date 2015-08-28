@@ -43,7 +43,7 @@ public class RunnerGame extends ApplicationAdapter {
 
 	QuitDialog quitDialog;
 
-	final int levelSwitchDelta = 25;
+	final int levelSwitchDelta = 25 * 2;
 	int score;
 	String scoreString;
 	int bestScore;
@@ -52,7 +52,7 @@ public class RunnerGame extends ApplicationAdapter {
 
 	long ticks;
 
-	int coinsCount = 6;
+	int coinsCount = 6 * 2;
 	ArrayList<Coin> coins;
 	ArrayList<Coin> availableCoins;
 
@@ -91,7 +91,6 @@ public class RunnerGame extends ApplicationAdapter {
 	public void create () {
 
 		// TODO: consider add more coins
-		// TODO: improve algorithm to avoid long distances
 		// TODO: top scores
 		// TODO: test on all android versions
 		lastAdsShowingTime = (int)(System.currentTimeMillis() / 1000);
