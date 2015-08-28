@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.WindowManager;
 
@@ -235,5 +236,24 @@ public class AndroidLauncher extends AndroidApplication implements IAdsControlle
 	@Override
 	public void setGameServicesEnabled(boolean v){
 		gameServicesEnabled = v;
+	}
+
+	public void openAppMarketPage()	{
+		try {
+			runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					String appPackageName = getPackageName();
+					try {
+						startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + appPackageName)));
+					} catch (android.content.ActivityNotFoundException anfe) {
+						startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + appPackageName)));
+					}
+				}
+			});
+		}
+		catch (Exception e){
+			e.printStackTrace();
+		}
 	}
 }

@@ -90,9 +90,9 @@ public class RunnerGame extends ApplicationAdapter {
 	@Override
 	public void create () {
 
-		// TODO: set ads
-		// TODO: rating
+		// TODO: top scores
 		// TODO: test on all android versions
+		// TODO: analytics
 		lastAdsShowingTime = (int)(System.currentTimeMillis() / 1000);
 
 		initPrefs();
@@ -348,11 +348,7 @@ public class RunnerGame extends ApplicationAdapter {
 		rateButton.setClickHandler(new EventHandler() {
 			@Override
 			public void action(int value) {
-//					if (gameServices.getSignedIn()) {
-//						gameServices.showLeaderboard();
-//					} else {
-//						gameServices.login(true);
-//					}
+				appControler.openAppMarketPage();
 			}
 		});
 		buttons.add(rateButton);
