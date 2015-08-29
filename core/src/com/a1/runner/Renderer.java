@@ -62,8 +62,8 @@ public class Renderer {
     private void drawTile(Tile t, float x, float y){
         float tileWidth = t.tileWidth;
         float tileHeight = t.tileHeight;
-        int countV = t.getCountV();
-        int countH = t.getCountH();
+        int countV = t.countV;
+        int countH = t.countH;
         for (float i = 0; i < countV; i++, y -= tileHeight) {
             for (float j = 0, xj = x; j < countH; j++, xj += tileWidth) {
                 drawTexture(t.texture, xj, y, tileWidth, tileHeight, t.brightness);
