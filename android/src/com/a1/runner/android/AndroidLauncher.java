@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.view.WindowManager;
 
 import com.a1.runner.ApplicationController;
+import com.a1.runner.EventHandler;
 import com.a1.runner.GameServices;
 import com.a1.runner.IAdsController;
 import com.badlogic.gdx.Gdx;
@@ -34,6 +35,8 @@ public class AndroidLauncher extends AndroidApplication implements IAdsControlle
 	protected void onCreate (Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+		setupAds();
+
 		// CLIENT_ALL указывет на использование API всех клиентов
 		gameHelper = new GameHelper(this, GameHelper.CLIENT_ALL);
 		// выключить автоматический вход при запуске игры
@@ -49,8 +52,6 @@ public class AndroidLauncher extends AndroidApplication implements IAdsControlle
 		initialize(new RunnerGame(this, this, this), config);
 
 		gameHelper.setup(this);
-
-		setupAds();
 	}
 
 	@Override
@@ -68,20 +69,11 @@ public class AndroidLauncher extends AndroidApplication implements IAdsControlle
 	public void setupAds() {
 		interstitialAd = new InterstitialAd(getApplication());
 		interstitialAd.setAdUnitId(INTERSTITIAL_AD_UNIT_ID);
-		AdRequest.Builder builder = new AdRequest.Builder();
-		AdRequest ad = builder.build();
-		try {
-			interstitialAd.loadAd(ad);
-		}
-		catch (Exception e){
-			e.printStackTrace();
-		}
 	}
 
 	private boolean isWifiConnected() {
 		ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 		NetworkInfo ni = cm.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-
 		return (ni != null && ni.isConnected());
 	}
 
@@ -94,17 +86,53 @@ public class AndroidLauncher extends AndroidApplication implements IAdsControlle
 		runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
-				if (interstitialAd.isLoaded()) {
-					interstitialAd.show();
-			  	}
-			 	else {
-					AdRequest interstitialRequest = new AdRequest.Builder().build();
-					try {
-						interstitialAd.loadAd(interstitialRequest);
+				try {
+					if (interstitialAd.isLoaded()) {
+						interstitialAd.show();
 					}
-					catch (Exception e){
-						e.printStackTrace();
+				}
+				catch (Exception e){
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+
+	@Override
+	public void requestInterstitialAdLoading(final EventHandler onLoaded){
+
+		if (!isWifiConnected())
+			onLoaded.action(-1);
+
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+
+					interstitialAd.setAdListener(new AdListener() {
+						@Override
+						public void onAdFailedToLoad(int errorCode) {
+							onLoaded.action(-1);
+						}
+
+						@Override
+						public void onAdLoaded() {
+							onLoaded.action(0);
+						}
+					});
+
+					if (!interstitialAd.isLoaded()) {
+						AdRequest.Builder builder = new AdRequest.Builder();
+						AdRequest ad = builder.addTestDevice(AdRequest.DEVICE_ID_EMULATOR).build();
+						interstitialAd.loadAd(ad);
 					}
+					else{
+						onLoaded.action(0);
+					}
+				}
+				catch (Exception e){
+					e.printStackTrace();
+					onLoaded.action(-1);
 				}
 			}
 		});

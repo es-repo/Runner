@@ -67,10 +67,12 @@ public class RunnerGame extends ApplicationAdapter {
 	boolean isHelp;
 
 	ApplicationController appControler;
-	IAdsController adsController;
+	final IAdsController adsController;
 	boolean adsEnabled = true;
-	int adsShowingIntervalInSec = 1;
+	int adsShowingIntervalInSec = 90;
 	int lastAdsShowingTime;
+	boolean adsLoading;
+	EventHandler adsLoadedHandler;
 
 	GameServices gameServices;
 	boolean gameServicesEnabled = true;
@@ -90,6 +92,22 @@ public class RunnerGame extends ApplicationAdapter {
 	@Override
 	public void create () {
 
+		this.adsLoadedHandler = new EventHandler() {
+			@Override
+			public void action(int value) {
+				adsLoading = false;
+				if (value == 0) {
+					try {
+						adsController.showInterstitialAd();
+					}
+					catch (Exception e){
+						e.printStackTrace();
+					}
+				}
+			}
+		};
+
+		// TODO: set real ads
 		// TODO: top scores
 		// TODO: test on all android versions
 		lastAdsShowingTime = (int)(System.currentTimeMillis() / 1000);
@@ -204,7 +222,7 @@ public class RunnerGame extends ApplicationAdapter {
 				inGameOver = false;
 				soundManager.playSound("start", 0.3f);
 				currentScene = menuScene;
-				tryShowAds();
+				tryLoadAndShowAds();
 			}
 		});
 
@@ -246,26 +264,18 @@ public class RunnerGame extends ApplicationAdapter {
 	@Override
 	public void render() {
 
-		if (Gdx.input.isKeyPressed(Input.Keys.BACK)){
-			if (!quitDialog.isVisible) {
-				pauseGame();
-				quitDialog.show();
-			}
-		}
-
-		if (Gdx.input.justTouched()) {
-			touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
-			camera.unproject(touchPos);
-			onTouch(touchPos.x, touchPos.y);
-		}
-
-		doLogicStep();
-
-		Gdx.gl.glClearColor(0, 0.81f, 0.82f, 1);
+		Gdx.gl.glClearColor(0.25f, 0.75f, 0.75f, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		camera.update();
 		batch.setProjectionMatrix(camera.combined);
 		batch.begin();
+
+		if (adsLoading)
+		{
+			drawLoading();
+			batch.end();
+			return;
+		}
 
 		renderer.drawScene(currentScene);
 
@@ -282,7 +292,31 @@ public class RunnerGame extends ApplicationAdapter {
 
 		batch.end();
 
+		doLogicStep();
+
+		if (Gdx.input.isKeyPressed(Input.Keys.BACK)){
+			if (!quitDialog.isVisible) {
+				pauseGame();
+				quitDialog.show();
+			}
+		}
+
+		if (Gdx.input.justTouched()) {
+			touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
+			camera.unproject(touchPos);
+			onTouch(touchPos.x, touchPos.y);
+		}
+
 		ticks++;
+	}
+
+	private void drawLoading(){
+		float sx = regularFont.getScaleX();
+		float sy = regularFont.getScaleX();
+		regularFont.getData().setScale(sx * 0.95f, sy * 0.95f);
+		glyphLayout.setText(regularFont, "Loading...");
+		regularFont.draw(batch, glyphLayout, (viewportWidth - glyphLayout.width) / 2, (viewportHeight + glyphLayout.height) / 2);
+		regularFont.getData().setScale(sx, sy);
 	}
 
 	private ArrayList<Button> createMenuButtons() {
@@ -774,7 +808,7 @@ public class RunnerGame extends ApplicationAdapter {
 		}
 	}
 
-	private void tryShowAds(){
+	private void tryLoadAndShowAds(){
 		try {
 			if (!adsEnabled)
 				return;
@@ -784,9 +818,11 @@ public class RunnerGame extends ApplicationAdapter {
 				return;
 
 			lastAdsShowingTime = (int)(System.currentTimeMillis() / 1000);
-			adsController.showInterstitialAd();
+			adsLoading = true;
+			adsController.requestInterstitialAdLoading(adsLoadedHandler);
 		}
 		catch(Exception e){
+			adsLoading = false;
 			// don't fail the game.
 			e.printStackTrace();
 		}
