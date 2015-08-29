@@ -2,15 +2,15 @@ package com.a1.runner;
 
 public class Platform extends ComposedFigure {
 
-    public static int blockWidth = 16;
-    public static int blockHeight = 16;
-    public static int maxBlocksCount = 12;
-    public static int minBlocksCount = 3;
-    public static float maxDistance = blockWidth * 8;
-    public static float minDistance = blockWidth * 3;
+    public static final int blockWidth = 16;
+    public static final int blockHeight = 16;
+    public static final int maxBlocksCount = 12;
+    public static final int minBlocksCount = 3;
+    public static final float maxDistance = blockWidth * 8;
+    public static final float minDistance = blockWidth * 3;
 
-    private int kindsCount = 5;
-    private int partsCount = 6;
+    private static final int kindsCount = 5;
+    private static final int partsCount = 6;
 
     private GameAssets assets;
 

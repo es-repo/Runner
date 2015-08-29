@@ -8,7 +8,8 @@ public class ComposedFigure extends Figure {
     @Override
     public void tick(long ticks){
         super.tick(ticks);
-        for (int i = 0; i < figures.size(); i++)
+        int s = figures.size();
+        for (int i = 0; i < s; i++)
             figures.get(i).tick(ticks);
     }
 }

@@ -26,45 +26,6 @@ public class Renderer {
         this.viewportHeight = viewportHeight;
     }
 
-    public void drawText(String text, float x, float y, boolean alignH, boolean alignV, boolean alignR){
-        drawText(text, x, y, alignH, alignV, alignR, 1);
-    }
-
-    public void drawText(String text, float x, float y, boolean alignH, boolean alignV, boolean alignR, float scale){
-
-          float sx = 1, sy = 1;
-            if (scale != 1) {
-                sx = font.getScaleX();
-                sy = font.getScaleX();
-                font.getData().setScale(sx * scale, sy * scale);
-            }
-
-            float textWidth = text.length() * fontSymbolWidth * scale;
-            float textHeight = fontSymbolHeight * scale;
-
-            float posX = x;
-            float posY = y;
-            if (alignH){
-                posX = (viewportWidth - x - textWidth) / 2;
-            }
-
-            if (alignV){
-                posY = (viewportHeight - y - textHeight) / 2;
-            }
-
-            if (alignR){
-                posX = x - textWidth;
-        }
-
-        glyphLayout.setText(font, text);
-        float w = glyphLayout.width;
-        font.draw(batch, glyphLayout, posX, posY);
-
-        if (scale != 0){
-            font.getData().setScale(sx, sy);
-        }
-    }
-
     public void drawScene(Scene scene){
         int s = scene.figures.size();
         for (int i = 0; i < s; i++)
@@ -99,8 +60,8 @@ public class Renderer {
     }
 
     private void drawTile(Tile t, float x, float y){
-        float tileWidth = t.getTileWidth();
-        float tileHeight = t.getTileHeight();
+        float tileWidth = t.tileWidth;
+        float tileHeight = t.tileHeight;
         int countV = t.getCountV();
         int countH = t.getCountH();
         for (float i = 0; i < countV; i++, y -= tileHeight) {

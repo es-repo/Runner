@@ -2,8 +2,8 @@ package com.a1.runner;
 
 public class Tile extends Sprite {
 
-    private float tileWidth;
-    private float tileHeight;
+    public float tileWidth;
+    public float tileHeight;
     private int countH = 1;
     private int countV = 1;
 
@@ -24,12 +24,5 @@ public class Tile extends Sprite {
     public void setCountV(int v){
         countV = v;
         this.boundingBox.height = countV * tileHeight;
-    }
-
-    public float getTileWidth(){
-        return tileWidth;
-    }
-    public float getTileHeight(){
-        return tileHeight;
     }
 }
