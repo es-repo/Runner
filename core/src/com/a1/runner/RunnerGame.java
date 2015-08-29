@@ -68,7 +68,7 @@ public class RunnerGame extends ApplicationAdapter {
 
 	ApplicationController appControler;
 	IAdsController adsController;
-	boolean adsEnabled = false;
+	boolean adsEnabled = true;
 	int adsShowingIntervalInSec = 1;
 	int lastAdsShowingTime;
 
