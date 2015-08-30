@@ -203,7 +203,7 @@ public class AndroidLauncher extends AndroidApplication implements IAdsControlle
 			return;
 
 		try {
-			Games.Leaderboards.submitScore(gameHelper.getApiClient(), "CgkI9Ke0jowDEAIQAQ", score);
+			Games.Leaderboards.submitScore(gameHelper.getApiClient(), "CgkIkpCnzKoUEAIQAQ", score);
 		}catch (Exception e) {
 			e.printStackTrace();
 		}
