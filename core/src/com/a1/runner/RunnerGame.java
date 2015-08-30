@@ -4,6 +4,7 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Preferences;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -42,10 +43,13 @@ public class RunnerGame extends ApplicationAdapter {
 	Sprite help;
 	Sprite pause;
 	Sprite resume;
+	TextFigure levelMessage;
+	static final String[] levelMessages = {"Level 1", "Level 2", "Level 3", "Level 4", "Level 5", "Amazing!", "Incredible!",
+			"Masterpiece!", "God level!!", "No way!!!", "Are you kidding me?!"};
 
 	QuitDialog quitDialog;
 
-	static final int levelSwitchDelta = 25 * 2;
+	static final int levelSwitchDelta = 25 * 4;
 	int score;
 	String scoreString;
 	int bestScore;
@@ -54,7 +58,7 @@ public class RunnerGame extends ApplicationAdapter {
 
 	long ticks;
 
-	static final int coinsCount = 6 * 2;
+	static final int coinsCount = 5 * 4;
 	ArrayList<Coin> coins;
 	ArrayList<Coin> availableCoins;
 
@@ -68,11 +72,15 @@ public class RunnerGame extends ApplicationAdapter {
 	boolean isPause;
 	boolean isHelp;
 
+	int currentLevel;
+
 	ApplicationController appControler;
 	final IAdsController adsController;
 	static final boolean adsEnabled = true;
 	static final int adsShowingIntervalInSec = 90;
 	int lastAdsShowingTime;
+	int gameSessionsSinceLastAdsShowing;
+	int minGameSessionsToShowAds = 3;
 	boolean adsLoading;
 	EventHandler adsLoadedHandler;
 
@@ -114,6 +122,7 @@ public class RunnerGame extends ApplicationAdapter {
 		// TODO: set real ads
 		// TODO: turn on image ads
 		// TODO: figure out descirption
+		// TODO: update screens
 		lastAdsShowingTime = (int)(System.currentTimeMillis() / 1000);
 
 		initPrefs();
@@ -131,6 +140,9 @@ public class RunnerGame extends ApplicationAdapter {
 			soundManager.off();
 
 		regularFont = new BitmapFont(Gdx.files.internal("fonts/vermin_vibes_1989.fnt"));
+		float sx = regularFont.getScaleX();
+		float sy = regularFont.getScaleX();
+		regularFont.getData().setScale(sx * 0.95f, sy * 0.95f);
 		regularFont.setColor(com.badlogic.gdx.graphics.Color.WHITE);
 		glyphLayout = new GlyphLayout();
 
@@ -180,6 +192,10 @@ public class RunnerGame extends ApplicationAdapter {
 		blackmask.texture = gameAssets.textures.get("blackmask");
 		blackmask.isVisible = false;
 
+		levelMessage = new TextFigure(regularFont);
+		levelMessage.boundingBox.y = 50;
+		levelMessage.color = new Color(1.0f, 1.0f, 0.7f, 1.0f);
+
 		runner = createRunner();
 
 		platforms = createPlatforms();
@@ -208,6 +224,7 @@ public class RunnerGame extends ApplicationAdapter {
 		gameScene.figures.add(runner);
 		ArrayList<Figure> pausePlayButtons = createPauseResumeIcons();
 		gameScene.figures.add(pausePlayButtons.get(0));
+		gameScene.figures.add(levelMessage);
 		gameScene.figures.add(blackmask);
 		gameScene.figures.addAll(soundOnOffIcons);
 		gameScene.figures.add(help);
@@ -315,12 +332,8 @@ public class RunnerGame extends ApplicationAdapter {
 	}
 
 	private void drawLoading(){
-		float sx = regularFont.getScaleX();
-		float sy = regularFont.getScaleX();
-		regularFont.getData().setScale(sx * 0.95f, sy * 0.95f);
 		glyphLayout.setText(regularFont, "Loading...");
 		regularFont.draw(batch, glyphLayout, (viewportWidth - glyphLayout.width) / 2, (viewportHeight + glyphLayout.height) / 2);
-		regularFont.getData().setScale(sx, sy);
 	}
 
 	private ArrayList<Button> createMenuButtons() {
@@ -345,6 +358,7 @@ public class RunnerGame extends ApplicationAdapter {
 				help.isVisible = true;
 				score = 0;
 				scoreString = "0";
+				currentLevel = -1;
 				initPlatformsAndCoinsPositions();
 				initRunner(runner);
 				rearrangePlatforms(true);
@@ -594,7 +608,7 @@ public class RunnerGame extends ApplicationAdapter {
 
 			int ci = (int)(Math.random() * availableCoins.size());
 			Coin coin = availableCoins.get(ci);
-			double probability = coin.isSuper ? 0.0002 : 0.5;
+			double probability = coin.isSuper ? 0.002 : 0.5;
 			double v = Math.random();
 			if (v < probability) {
 				Platform p = (Platform)this.platforms[i].get(platformsPerLevelCount - 1);
@@ -646,7 +660,6 @@ public class RunnerGame extends ApplicationAdapter {
 		regularFont.getData().setScale(sx, sy);
 	}
 
-	String fpsString = "0";
 	private void drawScore(){
 		if (runner.gatheredCoins != score){
 			score = runner.gatheredCoins;
@@ -654,12 +667,6 @@ public class RunnerGame extends ApplicationAdapter {
 		}
 		glyphLayout.setText(regularFont, scoreString);
 		regularFont.draw(batch, glyphLayout, (viewportWidth - glyphLayout.width) / 2, viewportHeight - padding);
-
-		if (ticks % 100 == 0) {
-			int fps = Gdx.graphics.getFramesPerSecond();
-			fpsString = String.valueOf(fps);
-		}
-		regularFont.draw(batch, fpsString, 0, viewportHeight);
 	}
 
 	private void drawGameOver(){
@@ -671,8 +678,7 @@ public class RunnerGame extends ApplicationAdapter {
 		regularFont.draw(batch, glyphLayout, (viewportWidth - glyphLayout.width) / 2,
 				viewportHeight / 2 + (viewportHeight / 2 - glyphLayout.height) / 2 + glyphLayout.height);
 
-		regularFont.getData().setScale(sx * 0.95f, sy * 0.95f);
-
+		regularFont.getData().setScale(sx, sy);
 		glyphLayout.setText(regularFont, "your best: ");
 		float width = glyphLayout.width;
 		glyphLayout.setText(regularFont, bestScoreString);
@@ -692,8 +698,6 @@ public class RunnerGame extends ApplicationAdapter {
 		regularFont.draw(batch, glyphLayout, xs, y);
 		glyphLayout.setText(regularFont, bestScoreString);
 		regularFont.draw(batch, glyphLayout, xe - glyphLayout.width, y);
-
-		regularFont.getData().setScale(sx, sy);
 	}
 
 	void doLogicStep() {
@@ -755,6 +759,11 @@ public class RunnerGame extends ApplicationAdapter {
 
 			float speedDelta = 0.25f;
 			int l = runner.gatheredCoins / levelSwitchDelta;
+			if (l != currentLevel){
+				currentLevel = l;
+				setLevelMessage(currentLevel);
+			}
+
 			if (l > 4) l = 4;
 			runner.speed = runner.initSpeed + l * speedDelta;
 		}
@@ -824,13 +833,18 @@ public class RunnerGame extends ApplicationAdapter {
 			if (!adsEnabled)
 				return;
 
+			gameSessionsSinceLastAdsShowing++;
+			if (gameSessionsSinceLastAdsShowing < minGameSessionsToShowAds)
+				return;
+
 			int now = (int)(System.currentTimeMillis() / 1000);
 			if (now - lastAdsShowingTime < adsShowingIntervalInSec)
 				return;
 
-			lastAdsShowingTime = (int)(System.currentTimeMillis() / 1000);
 			adsLoading = true;
 			adsController.requestInterstitialAdLoading(adsLoadedHandler);
+			gameSessionsSinceLastAdsShowing = 0;
+			lastAdsShowingTime = (int)(System.currentTimeMillis() / 1000);
 		}
 		catch(Exception e){
 			adsLoading = false;
@@ -879,5 +893,13 @@ public class RunnerGame extends ApplicationAdapter {
 		isHelp = v;
 		help.isVisible = v;
 		blackmask.isVisible = v;
+	}
+
+	private void setLevelMessage(int level){
+		if (level >= levelMessages.length)
+			return;
+		levelMessage.setText(levelMessages[level], glyphLayout);
+		levelMessage.centerAlign(viewportWidth, viewportHeight, true, false);
+		levelMessage.setBlinking(60, 1);
 	}
 }

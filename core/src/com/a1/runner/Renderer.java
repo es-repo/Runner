@@ -1,5 +1,6 @@
 package com.a1.runner;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
@@ -72,7 +73,7 @@ public class Renderer {
     }
 
     private void drawTextFigure(TextFigure f, float x, float y){
-        f.font.draw(batch, f.text, x, y + f.boundingBox.height);
+        f.font.draw(batch, f.text, x, y);
     }
 
     private void drawTexture(Texture t, float x, float y, float width, float height, float brightness){
