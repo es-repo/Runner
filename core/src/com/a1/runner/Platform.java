@@ -6,7 +6,7 @@ public class Platform extends ComposedFigure {
     public static final int blockHeight = 16;
     public static final int maxBlocksCount = 12;
     public static final int minBlocksCount = 3;
-    public static final float maxDistance = blockWidth * 7f;
+    public static final float maxDistance = blockWidth * 6.5f;
     public static final float minDistance = blockWidth * 3;
 
     private static final int kindsCount = 5;

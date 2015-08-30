@@ -33,7 +33,7 @@ public class RunnerGame extends ApplicationAdapter {
 
 	static final int leftSceneEdgePosX = -Platform.blockWidth * Platform.maxBlocksCount * 2;
 	static final int levelPadding = Platform.blockWidth;
-	static final int platformsPerLevelCount = 8;
+	static final int platformsPerLevelCount = 7;
 	static final int platformsLevelsCount = 4;
 	ArrayList[] platforms;
 	Runner runner;
@@ -378,11 +378,11 @@ public class RunnerGame extends ApplicationAdapter {
 			topScoresButton.setClickHandler(new EventHandler() {
 				@Override
 				public void action(int value) {
-//					if (gameServices.getSignedIn()) {
-//						gameServices.showLeaderboard();
-//					} else {
-//						gameServices.login(true);
-//					}
+					if (gameServices.getSignedIn()) {
+						gameServices.showLeaderboard();
+					} else {
+						gameServices.login(true);
+					}
 				}
 			});
 			buttons.add(topScoresButton);
@@ -437,7 +437,7 @@ public class RunnerGame extends ApplicationAdapter {
 
 		return icons;
 	}
-	
+
 	private void pauseGame(){
 		blackmask.isVisible = true;
 		isPause = true;
