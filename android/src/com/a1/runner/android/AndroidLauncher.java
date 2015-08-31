@@ -42,7 +42,7 @@ public class AndroidLauncher extends AndroidApplication implements IAdsControlle
 		gameHelper = new GameHelper(this, GameHelper.CLIENT_ALL);
 		// выключить автоматический вход при запуске игры
 		gameHelper.setConnectOnStart(false);
-		gameHelper.enableDebugLog(true);
+		//gameHelper.enableDebugLog(true);
 		// запретить отключение экрана без использования дополнительных
 		// разрешений (меньше разрешений – больше доверие к приложению)
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);

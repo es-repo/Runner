@@ -119,7 +119,6 @@ public class RunnerGame extends ApplicationAdapter {
 
 		// TODO: test on all android versions
 		// TODO: set real ads
-		// TODO: turn on image ads
 		// TODO: update screens
 		lastAdsShowingTime = (int)(System.currentTimeMillis() / 1000);
 
