@@ -2,6 +2,7 @@ package com.a1.runner.android;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -90,8 +91,7 @@ public class AndroidLauncher extends AndroidApplication implements IAdsControlle
 					if (interstitialAd.isLoaded()) {
 						interstitialAd.show();
 					}
-				}
-				catch (Exception e){
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
@@ -125,12 +125,10 @@ public class AndroidLauncher extends AndroidApplication implements IAdsControlle
 						AdRequest.Builder builder = new AdRequest.Builder();
 						AdRequest ad = builder.addTestDevice(AdRequest.DEVICE_ID_EMULATOR).build();
 						interstitialAd.loadAd(ad);
-					}
-					else{
+					} else {
 						onLoaded.action(0);
 					}
-				}
-				catch (Exception e){
+				} catch (Exception e) {
 					e.printStackTrace();
 					onLoaded.action(-1);
 				}
@@ -203,17 +201,11 @@ public class AndroidLauncher extends AndroidApplication implements IAdsControlle
 			return;
 
 		try {
-			Games.Leaderboards.submitScore(gameHelper.getApiClient(), "CgkIkpCnzKoUEAIQAQ", score);
+			String leaderBoardId = getResources().getString(R.string.leaderboard_top_scores);
+			Games.Leaderboards.submitScore(gameHelper.getApiClient(),leaderBoardId, score);
 		}catch (Exception e) {
 			e.printStackTrace();
 		}
-	}
-
-	@Override
-	public void unlockAchievement(String achievementId) {
-		// открыть достижение с ID achievementId
-		Games.Achievements.unlock(gameHelper.getApiClient(), achievementId);
-
 	}
 
 	@Override
@@ -223,24 +215,12 @@ public class AndroidLauncher extends AndroidApplication implements IAdsControlle
 			return;
 
 		try {
-			startActivityForResult(	Games.Leaderboards.getLeaderboardIntent(gameHelper.getApiClient(), "CgkI9Ke0jowDEAIQAQ"), 100);
+			String leaderBoardId = getResources().getString(R.string.leaderboard_top_scores);
+			startActivityForResult(	Games.Leaderboards.getLeaderboardIntent(gameHelper.getApiClient(), leaderBoardId), 100);
 		}
 		catch (Exception e) {
 			e.printStackTrace();
 		}
-	}
-
-	@Override
-	public void getAchievements() {
-
-		if (!getGameServicesEnabled())
-			return;
-
-		// вызвать Activity с достижениями
-		startActivityForResult(
-				Games.Achievements.getAchievementsIntent(gameHelper
-						.getApiClient()), 101);
-
 	}
 
 	@Override

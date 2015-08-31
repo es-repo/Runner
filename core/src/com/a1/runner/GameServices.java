@@ -10,11 +10,7 @@ public interface GameServices {
 
     void submitScore(int score);
 
-    void unlockAchievement(String achievementId);
-
     void showLeaderboard();
-
-    void getAchievements();
 
     void setGameServicesEnabled(boolean v);
 
