@@ -839,9 +839,9 @@ public class RunnerGame extends ApplicationAdapter {
 				return;
 
 			adsLoading = true;
-			adsController.requestInterstitialAdLoading(adsLoadedHandler);
 			gameSessionsSinceLastAdsShowing = 0;
 			lastAdsShowingTime = (int)(System.currentTimeMillis() / 1000);
+			adsController.requestInterstitialAdLoading(adsLoadedHandler);
 		}
 		catch(Exception e){
 			adsLoading = false;
