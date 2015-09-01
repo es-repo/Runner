@@ -339,7 +339,7 @@ public class RunnerGame extends ApplicationAdapter {
 		float buttonHeight = 30 * 0.9f;
 
 		float y = viewportHeight / 2 - buttonHeight / 2;
-		float dy = -buttonHeight * 1.25f;
+		float dy = -buttonHeight * 1.35f;
 		Button startButton = new Button(gameAssets.textures.get("buttons.start"), gameAssets.textures.get("buttons.start_pressed"));
 		startButton.boundingBox.width = buttonWidth;
 		startButton.boundingBox.height = buttonHeight;
