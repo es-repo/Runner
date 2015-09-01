@@ -569,9 +569,7 @@ public class RunnerGame extends ApplicationAdapter {
 		r.boundingBox.x = r.boundingBox.width * 3;
 		Platform p = (Platform)platforms[0].get(0);
 		r.boundingBox.y = p.boundingBox.y + p.boundingBox.height;
-		this.runner.velocity.y = 0;
-		this.runner.speed = this.runner.initSpeed;
-		r.gatheredCoins = 0;
+		this.runner.init();
 	}
 
 	private ArrayList<Coin> createCoins(){
@@ -771,8 +769,13 @@ public class RunnerGame extends ApplicationAdapter {
 				setLevelMessage(currentLevel);
 			}
 
-			if (l > 4) l = 4;
-			runner.speed = runner.initSpeed + l * speedDelta;
+			if (runner.speed < runner.initSpeed){
+				runner.speed += 0.05;
+			}
+			else {
+				if (l > 4) l = 4;
+				runner.speed = runner.initSpeed + l * speedDelta;
+			}
 		}
 	}
 
@@ -800,8 +803,6 @@ public class RunnerGame extends ApplicationAdapter {
 
 	private void onTouch(float x, float y) {
 
-		touchedTimeInTicks = ticks;
-
 		if (isHelp && !quitDialog.isVisible){
 			showHelp(false);
 			soundManager.playMusic();
@@ -814,6 +815,10 @@ public class RunnerGame extends ApplicationAdapter {
 		for(int i = 0; i < s; i++) {
 			if (touchedFigures.get(i).click())
 				return;
+		}
+
+		if (inGame && !isPause){
+			touchedTimeInTicks = ticks;
 		}
 	}
 

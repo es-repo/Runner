@@ -34,6 +34,13 @@ public class Runner extends Sprite {
         this.soundManager = soundManager;
     }
 
+    public void init(){
+        velocity.y = 0;
+        speed = 0;
+        gatheredCoins = 0;
+        texture = textures[0];
+    }
+
     @Override
     public void tick(long ticks) {
 
