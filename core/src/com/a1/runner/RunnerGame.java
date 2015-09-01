@@ -57,6 +57,7 @@ public class RunnerGame extends ApplicationAdapter {
 	boolean soundOff;
 
 	long ticks;
+	long touchedTimeInTicks;
 
 	static final int coinsCount = 5 * 4;
 	ArrayList<Coin> coins;
@@ -117,8 +118,6 @@ public class RunnerGame extends ApplicationAdapter {
 			}
 		};
 
-		// TODO: test on all android versions
-		// TODO: set real ads
 		lastAdsShowingTime = (int)(System.currentTimeMillis() / 1000);
 
 		initPrefs();
@@ -294,6 +293,19 @@ public class RunnerGame extends ApplicationAdapter {
 			return;
 		}
 
+		if (Gdx.input.isKeyPressed(Input.Keys.BACK)){
+			if (!quitDialog.isVisible) {
+				pauseGame();
+				quitDialog.show();
+			}
+		}
+
+		if (Gdx.input.justTouched()) {
+			touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
+			camera.unproject(touchPos);
+			onTouch(touchPos.x, touchPos.y);
+		}
+
 		renderer.drawScene(currentScene);
 
 		if (!quitDialog.isVisible) {
@@ -310,19 +322,6 @@ public class RunnerGame extends ApplicationAdapter {
 		batch.end();
 
 		doLogicStep();
-
-		if (Gdx.input.isKeyPressed(Input.Keys.BACK)){
-			if (!quitDialog.isVisible) {
-				pauseGame();
-				quitDialog.show();
-			}
-		}
-
-		if (Gdx.input.justTouched()) {
-			touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
-			camera.unproject(touchPos);
-			onTouch(touchPos.x, touchPos.y);
-		}
 
 		ticks++;
 	}
@@ -716,6 +715,11 @@ public class RunnerGame extends ApplicationAdapter {
 		currentScene.tick(ticks);
 
 		if (this.inGame) {
+
+			if (touchedTimeInTicks - ticks > -3){
+				runner.jump();
+			}
+
 			for (int l = 0; l < platformsLevelsCount; l++) {
 				for (int i = 0; i < platformsPerLevelCount; i++) {
 					Platform w = (Platform)this.platforms[l].get(i);
@@ -796,6 +800,8 @@ public class RunnerGame extends ApplicationAdapter {
 
 	private void onTouch(float x, float y) {
 
+		touchedTimeInTicks = ticks;
+
 		if (isHelp && !quitDialog.isVisible){
 			showHelp(false);
 			soundManager.playMusic();
@@ -808,10 +814,6 @@ public class RunnerGame extends ApplicationAdapter {
 		for(int i = 0; i < s; i++) {
 			if (touchedFigures.get(i).click())
 				return;
-		}
-
-		if (this.inGame && !isPause) {
-			this.runner.jump();
 		}
 	}
 
