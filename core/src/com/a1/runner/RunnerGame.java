@@ -59,7 +59,7 @@ public class RunnerGame extends ApplicationAdapter {
 	long ticks;
 	long touchedTimeInTicks;
 
-	static final int coinsCount = 22;
+	static final int coinsCount = 20;
 	ArrayList<Coin> coins;
 	ArrayList<Coin> availableCoins;
 
@@ -906,6 +906,6 @@ public class RunnerGame extends ApplicationAdapter {
 			return;
 		levelMessage.setText(levelMessages[level], glyphLayout);
 		levelMessage.centerAlign(viewportWidth, viewportHeight, true, false);
-		levelMessage.setBlinking(60, 1);
+		levelMessage.setBlinking(120, 1);
 	}
 }
