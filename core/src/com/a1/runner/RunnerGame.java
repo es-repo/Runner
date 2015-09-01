@@ -59,7 +59,7 @@ public class RunnerGame extends ApplicationAdapter {
 	long ticks;
 	long touchedTimeInTicks;
 
-	static final int coinsCount = 5 * 4;
+	static final int coinsCount = 22;
 	ArrayList<Coin> coins;
 	ArrayList<Coin> availableCoins;
 

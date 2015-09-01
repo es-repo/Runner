@@ -68,7 +68,7 @@ public class Runner extends Sprite {
     public void jump() {
         if (!this.isInJumpOrInFall()) {
             this.velocity.y = this.jumpAcc;
-            soundManager.playSound("jump", 0.5f);
+            soundManager.playSound("jump", 0.6f);
         }
     }
 
