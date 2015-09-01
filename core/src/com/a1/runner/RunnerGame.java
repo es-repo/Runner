@@ -375,10 +375,16 @@ public class RunnerGame extends ApplicationAdapter {
 			topScoresButton.setClickHandler(new EventHandler() {
 				@Override
 				public void action(int value) {
-					if (gameServices.getSignedIn()) {
-						gameServices.showLeaderboard();
-					} else {
-						gameServices.login(true);
+					try {
+						if (gameServices.getSignedIn()) {
+							gameServices.submitScore(bestScore);
+							gameServices.showLeaderboard();
+						} else {
+							gameServices.login(bestScore, true);
+						}
+					}
+					catch (Exception e){
+						e.printStackTrace();
 					}
 				}
 			});
@@ -428,7 +434,8 @@ public class RunnerGame extends ApplicationAdapter {
 		resume.setClickHandler(new EventHandler() {
 			@Override
 			public void action(int value) {
-				resumeGame(); }
+				resumeGame();
+			}
 		});
 		icons.add(resume);
 
@@ -780,10 +787,6 @@ public class RunnerGame extends ApplicationAdapter {
 				bestScoreString = String.valueOf(bestScore);
 				prefs.putInteger("bestScore", bestScore);
 				prefs.flush();
-			}
-
-			if (gameServices.getSignedIn()){
-				gameServices.submitScore(bestScore);
 			}
 		}
 		catch (Exception e)	{

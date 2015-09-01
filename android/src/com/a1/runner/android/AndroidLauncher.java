@@ -31,6 +31,7 @@ public class AndroidLauncher extends AndroidApplication implements IAdsControlle
 	GameHelper gameHelper;
 	boolean gameServicesEnabled = true;
 	boolean showLeaderboardAfterLogging;
+	int bestScore;
 
 	@Override
 	protected void onCreate (Bundle savedInstanceState) {
@@ -189,8 +190,9 @@ public class AndroidLauncher extends AndroidApplication implements IAdsControlle
 	}
 
 	@Override
-	public void login(boolean showLeaderboardAfterLogging){
+	public void login(int bestScore, boolean showLeaderboardAfterLogging){
 		this.showLeaderboardAfterLogging = true;
+		this.bestScore = bestScore;
 		login();
 	}
 
@@ -227,6 +229,7 @@ public class AndroidLauncher extends AndroidApplication implements IAdsControlle
 	public void onSignInSucceeded() {
 		if (showLeaderboardAfterLogging) {
 			showLeaderboardAfterLogging = false;
+			submitScore(bestScore);
 			showLeaderboard();
 		}
 	}
