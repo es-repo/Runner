@@ -124,7 +124,7 @@ public class AndroidLauncher extends AndroidApplication implements IAdsControlle
 
 					if (!interstitialAd.isLoaded()) {
 						AdRequest.Builder builder = new AdRequest.Builder();
-						AdRequest ad = builder.addTestDevice(AdRequest.DEVICE_ID_EMULATOR).build();
+						AdRequest ad = builder.build();
 						interstitialAd.loadAd(ad);
 					} else {
 						onLoaded.action(0);
