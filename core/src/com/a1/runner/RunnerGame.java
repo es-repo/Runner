@@ -79,6 +79,7 @@ public class RunnerGame extends ApplicationAdapter {
 
 	ApplicationController appControler;
 	final IAdsController adsController;
+	final IAnalyticsNotifier analyticsNotifier;
 	static final boolean adsEnabled = true;
 	static final int adsShowingIntervalInSec = 30;
 	int lastAdsShowingTime;
@@ -95,11 +96,13 @@ public class RunnerGame extends ApplicationAdapter {
 	Scene gameOverScene;
 	Scene currentScene;
 
-	public RunnerGame(ApplicationController appControler, IAdsController adsController, GameServices actionResolver){
+	public RunnerGame(ApplicationController appControler, IAdsController adsController,
+					  GameServices actionResolver, IAnalyticsNotifier analyticsNotifier){
 		this.appControler = appControler;
 		this.adsController = adsController;
 		this.gameServices = actionResolver;
 		this.gameServices.setGameServicesEnabled(gameServicesEnabled);
+		this.analyticsNotifier = analyticsNotifier;
 	}
 
 	@Override
@@ -241,6 +244,7 @@ public class RunnerGame extends ApplicationAdapter {
 				soundManager.playSound("start", 0.3f);
 				currentScene = menuScene;
 				tryLoadAndShowAds();
+				analyticsNotifier.setScreenName("menu");
 			}
 		});
 
@@ -257,6 +261,8 @@ public class RunnerGame extends ApplicationAdapter {
 		soundManager.playSound("start", 0.3f);
 
 		Gdx.input.setCatchBackKey(true);
+
+		analyticsNotifier.setScreenName("menu");
 	}
 
 	private void initPrefs(){
@@ -362,6 +368,7 @@ public class RunnerGame extends ApplicationAdapter {
 				rearrangeCoins();
 				currentScene = gameScene;
 				adsController.hideBannerAd();
+				analyticsNotifier.setScreenName("game");
 			}
 		});
 		buttons.add(startButton);
@@ -394,7 +401,7 @@ public class RunnerGame extends ApplicationAdapter {
 							pauseGame();
 							gameServices.login(bestScore, isNewBestScore, true, loginDone, loginDone);
 						}
-
+						analyticsNotifier.setScreenName("top_scores");
 						isNewBestScore = false;
 					}
 					catch (Exception e){
@@ -415,6 +422,7 @@ public class RunnerGame extends ApplicationAdapter {
 			@Override
 			public void action(int value) {
 				appControler.openAppMarketPage();
+				analyticsNotifier.setScreenName("top_scores");
 			}
 		});
 		buttons.add(rateButton);
@@ -818,6 +826,7 @@ public class RunnerGame extends ApplicationAdapter {
 		}
 
 		adsController.showBannerAd();
+		analyticsNotifier.setScreenName("game_over");
 	}
 
 	private void onTouch(float x, float y) {

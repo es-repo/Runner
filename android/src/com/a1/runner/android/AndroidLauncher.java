@@ -12,6 +12,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.RelativeLayout;
 
+import com.a1.runner.IAnalyticsNotifier;
 import com.badlogic.gdx.backends.android.AndroidApplication;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
 
@@ -20,6 +21,9 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.InterstitialAd;
+import com.google.android.gms.analytics.GoogleAnalytics;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 import com.google.android.gms.games.Games;
 import com.google.example.games.basegameutils.GameHelper;
 
@@ -29,7 +33,10 @@ import com.a1.runner.GameServices;
 import com.a1.runner.IAdsController;
 import com.a1.runner.RunnerGame;
 
-public class AndroidLauncher extends AndroidApplication implements IAdsController, ApplicationController, GameHelper.GameHelperListener, GameServices {
+public class AndroidLauncher extends AndroidApplication implements IAdsController, IAnalyticsNotifier,
+		ApplicationController, GameHelper.GameHelperListener, GameServices {
+
+	Tracker analyticsTracker;
 
 	InterstitialAd interstitialAd;
 	AdView bannerAdView;
@@ -68,6 +75,18 @@ public class AndroidLauncher extends AndroidApplication implements IAdsControlle
 
 		initGameServices();
 		initInterstitialAds();
+
+		RunnerApplication app = (RunnerApplication) getApplication();
+		analyticsTracker = app.getAnalyticsTracker();
+	}
+
+	synchronized private Tracker getAnalyticsTrackerTracker() {
+		if (analyticsTracker == null) {
+			GoogleAnalytics analytics = GoogleAnalytics.getInstance(this);
+			// To enable debug logging use: adb shell setprop log.tag.GAv4 DEBUG
+			analyticsTracker = analytics.newTracker(R.xml.global_tracker);
+		}
+		return analyticsTracker;
 	}
 
 	private View createGameView(){
@@ -75,7 +94,7 @@ public class AndroidLauncher extends AndroidApplication implements IAdsControlle
 		config.useAccelerometer = false;
 		config.useCompass = false;
 
-		View view = initializeForView(new RunnerGame(this, this, this), config);
+		View view = initializeForView(new RunnerGame(this, this, this, this), config);
 		return view;
 	}
 
@@ -85,6 +104,14 @@ public class AndroidLauncher extends AndroidApplication implements IAdsControlle
 		String adId = getResources().getString(R.string.banner_ad_unit_id);
 		adView.setAdUnitId(adId);
 		adView.setBackgroundColor(Color.TRANSPARENT);
+		final AndroidLauncher al = this;
+		adView.setAdListener(new AdListener() {
+			@Override
+			public void onAdOpened() {
+				al.setScreenName("banner_ad_clicked");
+			}
+		});
+
 		return adView;
 	}
 
@@ -92,12 +119,24 @@ public class AndroidLauncher extends AndroidApplication implements IAdsControlle
 	protected void onStart() {
 		super.onStart();
 		gameHelper.onStart(this);
+		try{
+			GoogleAnalytics.getInstance(this).reportActivityStart(this);
+		}
+		catch (Exception e){
+			e.printStackTrace();
+		}
 	}
 
 	@Override
 	protected void onStop() {
 		super.onStop();
 		gameHelper.onStop();
+		try{
+			GoogleAnalytics.getInstance(this).reportActivityStop(this);
+		}
+		catch (Exception e){
+			e.printStackTrace();
+		}
 	}
 
 	private void initGameServices(){
@@ -133,12 +172,14 @@ public class AndroidLauncher extends AndroidApplication implements IAdsControlle
 		if (!isWifiConnected())
 			return;
 
+		final AndroidLauncher al = this;
 		runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
 				try {
 					if (interstitialAd.isLoaded()) {
 						interstitialAd.show();
+						al.setScreenName("interstitial_ad");
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -382,6 +423,16 @@ public class AndroidLauncher extends AndroidApplication implements IAdsControlle
 			});
 		}
 		catch (Exception e){
+			e.printStackTrace();
+		}
+	}
+
+	public void setScreenName(String name){
+		try {
+			analyticsTracker.setScreenName(name);
+			analyticsTracker.send(new HitBuilders.AppViewBuilder().build());
+		}
+		catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
