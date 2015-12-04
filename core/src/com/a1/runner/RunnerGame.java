@@ -274,6 +274,11 @@ public class RunnerGame extends ApplicationAdapter {
 			bestScore = prefs.getInteger("bestScore");
 			bestScoreString = String.valueOf(bestScore);
 
+			if (!prefs.contains("isNewBestScore")){
+				prefs.putBoolean("isNewBestScore", false);
+			}
+			isNewBestScore = prefs.getBoolean("isNewBestScore");
+
 			if (!prefs.contains("sondoff")) {
 				prefs.putBoolean("soundoff", false);
 			}
@@ -403,6 +408,14 @@ public class RunnerGame extends ApplicationAdapter {
 						}
 						analyticsNotifier.setScreenName("top_scores");
 						isNewBestScore = false;
+						try{
+							prefs.putBoolean("isNewBestScore", isNewBestScore);
+							prefs.flush();
+						}
+						catch (Exception e)	{
+							// dont fail the game.
+							e.printStackTrace();
+						}
 					}
 					catch (Exception e){
 						e.printStackTrace();
@@ -825,6 +838,7 @@ public class RunnerGame extends ApplicationAdapter {
 				isNewBestScore = true;
 				bestScoreString = String.valueOf(bestScore);
 				prefs.putInteger("bestScore", bestScore);
+				prefs.putBoolean("isNewBestScore", isNewBestScore);
 				prefs.flush();
 			}
 		}
