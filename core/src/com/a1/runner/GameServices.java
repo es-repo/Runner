@@ -4,9 +4,10 @@ public interface GameServices {
 
     boolean getSignedIn();
 
-    void login();
+    void login(final EventHandler onLoginSucceed, final EventHandler onLoginFailed);
 
-    void login(int bestScore, boolean submitBestScore, boolean showLeaderboardAfterLogging);
+    void login(int bestScore, boolean submitBestScore, boolean showLeaderboardAfterLogging,
+               final EventHandler onLoginSucceed, final EventHandler onLoginFailed);
 
     void submitScore(int score);
 

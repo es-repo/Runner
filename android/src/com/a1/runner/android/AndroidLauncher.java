@@ -33,6 +33,9 @@ public class AndroidLauncher extends AndroidApplication implements IAdsControlle
 	boolean showLeaderboardAfterLogging;
 	int bestScore;
 	boolean submitBestScore;
+	
+	EventHandler onLoginSucceed;
+	EventHandler onLoginFailed;
 
 	@Override
 	protected void onCreate (Bundle savedInstanceState) {
@@ -164,10 +167,14 @@ public class AndroidLauncher extends AndroidApplication implements IAdsControlle
 	}
 
 	@Override
-	public void login() {
-
+	public void login(final EventHandler onLoginSucceed, final EventHandler onLoginFailed) {		
+		
 		if (!getGameServicesEnabled())
 			return;
+		
+		this.onLoginFailed = onLoginFailed;
+		this.onLoginSucceed = onLoginSucceed;
+		final AndroidLauncher ad = this;
 
 		try {
 			runOnUiThread(new Runnable() {
@@ -180,22 +187,33 @@ public class AndroidLauncher extends AndroidApplication implements IAdsControlle
 						gameHelper.beginUserInitiatedSignIn();
 					}
 					catch (Exception e){
+						if (ad.onLoginFailed != null) {
+							ad.onLoginFailed.action(0);
+						}
+						ad.onLoginFailed = null;
+						ad.onLoginSucceed = null;
 						e.printStackTrace();
 					}
 
 				}
 			});
 		} catch (Exception e) {
+			if (ad.onLoginFailed != null) {
+				ad.onLoginFailed.action(0);
+			}
+			ad.onLoginFailed = null;
+			ad.onLoginSucceed = null;
 			e.printStackTrace();
 		}
 	}
 
 	@Override
-	public void login(int bestScore, boolean submitBestScore, boolean showLeaderboardAfterLogging){
+	public void login(int bestScore, boolean submitBestScore, boolean showLeaderboardAfterLogging,
+					  final EventHandler onLoginSucceed, final EventHandler onLoginFailed){
 		this.showLeaderboardAfterLogging = true;
 		this.bestScore = bestScore;
 		this.submitBestScore = submitBestScore;
-		login();
+		login(onLoginSucceed, onLoginFailed);
 	}
 
 	@Override
@@ -229,6 +247,13 @@ public class AndroidLauncher extends AndroidApplication implements IAdsControlle
 
 	@Override
 	public void onSignInSucceeded() {
+
+		if (onLoginFailed != null) {
+			onLoginSucceed.action(0);
+		}
+		this.onLoginFailed = null;
+		this.onLoginSucceed = null;
+
 		if (showLeaderboardAfterLogging) {
 			showLeaderboardAfterLogging = false;
 			if (submitBestScore) {
@@ -242,6 +267,11 @@ public class AndroidLauncher extends AndroidApplication implements IAdsControlle
 	@Override
 	public void onSignInFailed() {
 		showLeaderboardAfterLogging = false;
+		if (onLoginFailed != null) {
+			onLoginFailed.action(0);
+		}
+		this.onLoginFailed = null;
+		this.onLoginSucceed = null;
 	}
 
 	@Override

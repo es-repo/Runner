@@ -371,6 +371,14 @@ public class RunnerGame extends ApplicationAdapter {
 			topScoresButton.boundingBox.height = buttonHeight;
 			topScoresButton.boundingBox.y = y;
 			centerFigureHorizontally(topScoresButton);
+
+			final EventHandler loginDone = new EventHandler() {
+				@Override
+				public void action(int value) {
+					resumeGame();
+				}
+			};
+
 			topScoresButton.setClickHandler(new EventHandler() {
 				@Override
 				public void action(int value) {
@@ -381,7 +389,8 @@ public class RunnerGame extends ApplicationAdapter {
 							}
 							gameServices.showLeaderboard();
 						} else {
-							gameServices.login(bestScore, isNewBestScore, true);
+							pauseGame();
+							gameServices.login(bestScore, isNewBestScore, true, loginDone, loginDone);
 						}
 
 						isNewBestScore = false;
