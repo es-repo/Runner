@@ -53,6 +53,7 @@ public class RunnerGame extends ApplicationAdapter {
 	int score;
 	String scoreString;
 	int bestScore;
+	boolean isNewBestScore;
 	String bestScoreString;
 	boolean soundOff;
 
@@ -375,11 +376,15 @@ public class RunnerGame extends ApplicationAdapter {
 				public void action(int value) {
 					try {
 						if (gameServices.getSignedIn()) {
-							gameServices.submitScore(bestScore);
+							if (isNewBestScore){
+								gameServices.submitScore(bestScore);
+							}
 							gameServices.showLeaderboard();
 						} else {
-							gameServices.login(bestScore, true);
+							gameServices.login(bestScore, isNewBestScore, true);
 						}
+
+						isNewBestScore = false;
 					}
 					catch (Exception e){
 						e.printStackTrace();
@@ -790,6 +795,7 @@ public class RunnerGame extends ApplicationAdapter {
 		try{
 			if (bestScore < runner.gatheredCoins) {
 				bestScore = runner.gatheredCoins;
+				isNewBestScore = true;
 				bestScoreString = String.valueOf(bestScore);
 				prefs.putInteger("bestScore", bestScore);
 				prefs.flush();

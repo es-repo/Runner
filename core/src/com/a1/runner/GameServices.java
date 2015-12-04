@@ -6,7 +6,7 @@ public interface GameServices {
 
     void login();
 
-    void login(int bestScore, boolean showLeaderboardAfterLogging);
+    void login(int bestScore, boolean submitBestScore, boolean showLeaderboardAfterLogging);
 
     void submitScore(int score);
 
