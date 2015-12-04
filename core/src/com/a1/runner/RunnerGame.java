@@ -81,7 +81,7 @@ public class RunnerGame extends ApplicationAdapter {
 	final IAdsController adsController;
 	final IAnalyticsNotifier analyticsNotifier;
 	static final boolean adsEnabled = true;
-	static final int adsShowingIntervalInSec = 30;
+	static final int adsShowingIntervalInSec = 10;
 	int lastAdsShowingTime;
 	int gameSessionsSinceLastAdsShowing;
 	int minGameSessionsToShowAds = 3;
@@ -569,9 +569,17 @@ public class RunnerGame extends ApplicationAdapter {
 				p.setBlocksCount(blocksCount);
 				double d = Platform.minDistance + Math.random() * Platform.maxDistance;
 				p.boundingBox.x = forStart ? 0 : (int)(lastp.boundingBox.x + lastp.boundingBox.width + d);
-				int k = ((runner.gatheredCoins / levelSwitchDelta)) % 9;
-				if (k > 4) k = 9 - k;
+
+				int k = 0;
+				if (currentLevel < 9) {
+					k = currentLevel > 0 ? currentLevel % 9 : 0;
+					if (k > 4) k = 9 - k;
+				}
+				else {
+					k = (int) (Math.random() * 5);
+				}
 				p.setKind(k);
+
 				platforms.remove(0);
 				platforms.add(p);
 			}
