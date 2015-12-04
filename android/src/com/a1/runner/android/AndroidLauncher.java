@@ -148,11 +148,11 @@ public class AndroidLauncher extends AndroidApplication implements IAdsControlle
 		gameHelper.setup(this);
 	}
 
-	private boolean isWifiConnected() {
+	private boolean isOnline() {
 		try {
 			ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-			NetworkInfo ni = cm.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-			return (ni != null && ni.isConnected());
+			NetworkInfo netInfo = cm.getActiveNetworkInfo();
+			return netInfo != null && netInfo.isConnectedOrConnecting();
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -169,7 +169,7 @@ public class AndroidLauncher extends AndroidApplication implements IAdsControlle
 	@Override
 	public void showInterstitialAd() {
 
-		if (!isWifiConnected())
+		if (!isOnline())
 			return;
 
 		final AndroidLauncher al = this;
@@ -189,7 +189,7 @@ public class AndroidLauncher extends AndroidApplication implements IAdsControlle
 	}
 
 	public void showBannerAd(){
-		if (!isWifiConnected())
+		if (!isOnline())
 			return;
 
 		if (bannerAdEnabled) {
@@ -232,7 +232,7 @@ public class AndroidLauncher extends AndroidApplication implements IAdsControlle
 	@Override
 	public void requestInterstitialAdLoading(final EventHandler onLoaded){
 
-		if (!isWifiConnected())
+		if (!isOnline())
 			onLoaded.action(-1);
 
 		runOnUiThread(new Runnable() {
