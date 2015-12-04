@@ -328,7 +328,7 @@ public class RunnerGame extends ApplicationAdapter {
 	}
 
 	private void drawLoading(){
-		glyphLayout.setText(regularFont, "Loading...");
+		glyphLayout.setText(regularFont, "Loading ad...");
 		regularFont.draw(batch, glyphLayout, (viewportWidth - glyphLayout.width) / 2, (viewportHeight + glyphLayout.height) / 2);
 	}
 
