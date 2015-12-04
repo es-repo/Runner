@@ -3,4 +3,6 @@
     <string name="app_name">Roof Runner</string>
     <string name="app_id">725333415396</string>
     <string name="leaderboard_top_scores">CgkI5Kv2iY4VEAIQAQ</string>
+    <string name="interstitial_ad_unit_id">ca-app-pub-8413752460507538/7397472406</string>
+    <string name="banner_ad_unit_id">ca-app-pub-8413752460507538/7226320008</string>
 </resources>

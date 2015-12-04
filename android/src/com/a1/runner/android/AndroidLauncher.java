@@ -2,37 +2,43 @@ package com.a1.runner.android;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Resources;
+import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.View;
+import android.view.Window;
 import android.view.WindowManager;
+import android.widget.RelativeLayout;
+
+import com.badlogic.gdx.backends.android.AndroidApplication;
+import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
+
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.InterstitialAd;
+import com.google.android.gms.games.Games;
+import com.google.example.games.basegameutils.GameHelper;
 
 import com.a1.runner.ApplicationController;
 import com.a1.runner.EventHandler;
 import com.a1.runner.GameServices;
 import com.a1.runner.IAdsController;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.backends.android.AndroidApplication;
-import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
 import com.a1.runner.RunnerGame;
-import com.google.android.gms.ads.AdListener;
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.InterstitialAd;
-import com.google.android.gms.games.Games;
-import com.google.example.games.basegameutils.GameHelper;
 
 public class AndroidLauncher extends AndroidApplication implements IAdsController, ApplicationController, GameHelper.GameHelperListener, GameServices {
 
-	private static final String INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-8413752460507538/7397472406";
-
 	InterstitialAd interstitialAd;
+	AdView bannerAdView;
 	GameHelper gameHelper;
 	boolean gameServicesEnabled = true;
 	boolean showLeaderboardAfterLogging;
 	int bestScore;
 	boolean submitBestScore;
+	boolean bannerAdEnabled = true;
 	
 	EventHandler onLoginSucceed;
 	EventHandler onLoginFailed;
@@ -41,23 +47,45 @@ public class AndroidLauncher extends AndroidApplication implements IAdsControlle
 	protected void onCreate (Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		setupAds();
-
-		// CLIENT_ALL указывет на использование API всех клиентов
-		gameHelper = new GameHelper(this, GameHelper.CLIENT_ALL);
-		// выключить автоматический вход при запуске игры
-		gameHelper.setConnectOnStart(false);
-		//gameHelper.enableDebugLog(true);
 		// запретить отключение экрана без использования дополнительных
 		// разрешений (меньше разрешений – больше доверие к приложению)
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+		getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
 
+		RelativeLayout layout = new RelativeLayout(this);
+		layout.addView(createGameView());
+
+		RelativeLayout.LayoutParams adParams =
+				new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+		adParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+		adParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
+		bannerAdView = createAdView();
+		layout.addView(bannerAdView, adParams);
+
+		setContentView(layout);
+
+		initGameServices();
+		initInterstitialAds();
+	}
+
+	private View createGameView(){
 		AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
 		config.useAccelerometer = false;
 		config.useCompass = false;
-		initialize(new RunnerGame(this, this, this), config);
 
-		gameHelper.setup(this);
+		View view = initializeForView(new RunnerGame(this, this, this), config);
+		return view;
+	}
+
+	private AdView createAdView(){
+		AdView adView = new AdView(this);
+		adView.setAdSize(AdSize.BANNER);
+		String adId = getResources().getString(R.string.banner_ad_unit_id);
+		adView.setAdUnitId(adId);
+		adView.setBackgroundColor(Color.TRANSPARENT);
+		return adView;
 	}
 
 	@Override
@@ -72,15 +100,31 @@ public class AndroidLauncher extends AndroidApplication implements IAdsControlle
 		gameHelper.onStop();
 	}
 
-	public void setupAds() {
-		interstitialAd = new InterstitialAd(getApplication());
-		interstitialAd.setAdUnitId(INTERSTITIAL_AD_UNIT_ID);
+	private void initGameServices(){
+		// CLIENT_ALL указывет на использование API всех клиентов
+		gameHelper = new GameHelper(this, GameHelper.CLIENT_ALL);
+		// выключить автоматический вход при запуске игры
+		gameHelper.setConnectOnStart(false);
+		//gameHelper.enableDebugLog(true);
+		gameHelper.setup(this);
 	}
 
 	private boolean isWifiConnected() {
-		ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-		NetworkInfo ni = cm.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-		return (ni != null && ni.isConnected());
+		try {
+			ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+			NetworkInfo ni = cm.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+			return (ni != null && ni.isConnected());
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+	private void initInterstitialAds() {
+		interstitialAd = new InterstitialAd(getApplication());
+		String adId = getResources().getString(R.string.interstitial_ad_unit_id);
+		interstitialAd.setAdUnitId(adId);
 	}
 
 	@Override
@@ -96,6 +140,47 @@ public class AndroidLauncher extends AndroidApplication implements IAdsControlle
 					if (interstitialAd.isLoaded()) {
 						interstitialAd.show();
 					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+
+	public void showBannerAd(){
+		if (!isWifiConnected())
+			return;
+
+		if (bannerAdEnabled) {
+
+			runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					bannerAdView.setEnabled(true);
+					bannerAdView.setVisibility(View.VISIBLE);
+					try {
+						if (!bannerAdView.isLoading()) {
+							AdRequest adRequest = new AdRequest.Builder().build();
+							bannerAdView.loadAd(adRequest);
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			});
+		}
+	}
+
+	public void hideBannerAd(){
+
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				bannerAdView.setEnabled(true);
+				bannerAdView.setVisibility(View.VISIBLE);
+				try {
+					bannerAdView.setEnabled(false);
+					bannerAdView.setVisibility(View.GONE);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -181,8 +266,6 @@ public class AndroidLauncher extends AndroidApplication implements IAdsControlle
 
 				@Override
 				public void run() {
-					// инициировать вход пользователя. Может быть вызван диалог
-					// входа. Выполняется в UI-потоке
 					try{
 						gameHelper.beginUserInitiatedSignIn();
 					}

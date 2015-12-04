@@ -30,6 +30,7 @@ public class RunnerGame extends ApplicationAdapter {
 
 	static final float iconSize = 24;
 	static final float padding = 10;
+	static final float adBannerYShift = 9;
 
 	static final int leftSceneEdgePosX = -Platform.blockWidth * Platform.maxBlocksCount * 2;
 	static final int levelPadding = Platform.blockWidth;
@@ -79,7 +80,7 @@ public class RunnerGame extends ApplicationAdapter {
 	ApplicationController appControler;
 	final IAdsController adsController;
 	static final boolean adsEnabled = true;
-	static final int adsShowingIntervalInSec = 90;
+	static final int adsShowingIntervalInSec = 30;
 	int lastAdsShowingTime;
 	int gameSessionsSinceLastAdsShowing;
 	int minGameSessionsToShowAds = 3;
@@ -156,7 +157,7 @@ public class RunnerGame extends ApplicationAdapter {
 		title.boundingBox.width = 358;
 		title.boundingBox.height = 42;
 		title.boundingBox.x = (viewportWidth - title.boundingBox.width) / 2;
-		title.boundingBox.y = viewportHeight / 2 + (viewportHeight / 2 - title.boundingBox.height) / 2;
+		title.boundingBox.y = viewportHeight / 2 + (viewportHeight / 2 - title.boundingBox.height) / 2 + adBannerYShift;
 
 		help = new Sprite();
 		help.boundingBox.width = 150;
@@ -231,7 +232,7 @@ public class RunnerGame extends ApplicationAdapter {
 		okButton.boundingBox.width = 87 * 0.9f;
 		okButton.boundingBox.height = 30 * 0.9f;
 		okButton.boundingBox.x = (viewportWidth - okButton.boundingBox.width) / 2;
-		okButton.boundingBox.y = 25;
+		okButton.boundingBox.y = 30 + adBannerYShift;
 		okButton.setClickHandler(new EventHandler() {
 			@Override
 			public void action(int value) {
@@ -328,7 +329,7 @@ public class RunnerGame extends ApplicationAdapter {
 	}
 
 	private void drawLoading(){
-		glyphLayout.setText(regularFont, "Loading ad...");
+		glyphLayout.setText(regularFont, "Ad loading...");
 		regularFont.draw(batch, glyphLayout, (viewportWidth - glyphLayout.width) / 2, (viewportHeight + glyphLayout.height) / 2);
 	}
 
@@ -338,7 +339,7 @@ public class RunnerGame extends ApplicationAdapter {
 		float buttonWidth = 180 * 0.9f;
 		float buttonHeight = 30 * 0.9f;
 
-		float y = viewportHeight / 2 - buttonHeight / 2;
+		float y = viewportHeight / 2 - buttonHeight / 2 + adBannerYShift;
 		float dy = -buttonHeight * 1.35f;
 		Button startButton = new Button(gameAssets.textures.get("buttons.start"), gameAssets.textures.get("buttons.start_pressed"));
 		startButton.boundingBox.width = buttonWidth;
@@ -360,6 +361,7 @@ public class RunnerGame extends ApplicationAdapter {
 				rearrangePlatforms(true);
 				rearrangeCoins();
 				currentScene = gameScene;
+				adsController.hideBannerAd();
 			}
 		});
 		buttons.add(startButton);
@@ -669,7 +671,7 @@ public class RunnerGame extends ApplicationAdapter {
 		float sx = regularFont.getScaleX();
 		float sy = regularFont.getScaleX();
 		regularFont.getData().setScale(sx * 0.35f, sy * 0.35f);
-		glyphLayout.setText(regularFont, "Music by 8-bit Ninjas");
+		glyphLayout.setText(regularFont, "Music: 8-bit Ninjas");
 		regularFont.draw(batch, glyphLayout, 2, glyphLayout.height + 3);
 		regularFont.getData().setScale(sx, sy);
 	}
@@ -690,7 +692,7 @@ public class RunnerGame extends ApplicationAdapter {
 		regularFont.getData().setScale(sx * 1.5f, sy * 1.5f);
 		glyphLayout.setText(regularFont, "GAME OVER");
 		regularFont.draw(batch, glyphLayout, (viewportWidth - glyphLayout.width) / 2,
-				viewportHeight / 2 + (viewportHeight / 2 - glyphLayout.height) / 2 + glyphLayout.height);
+				viewportHeight / 2 + (viewportHeight / 2 - glyphLayout.height) / 2 + glyphLayout.height + adBannerYShift);
 
 		regularFont.getData().setScale(sx, sy);
 		glyphLayout.setText(regularFont, "your best: ");
@@ -700,7 +702,7 @@ public class RunnerGame extends ApplicationAdapter {
 		float xs = (viewportWidth - width) / 2;
 		float xe = (viewportWidth + width) / 2;
 
-		float y = viewportHeight / 2 + glyphLayout.height / 2;
+		float y = viewportHeight / 2 + glyphLayout.height / 2 + adBannerYShift;
 		glyphLayout.setText(regularFont, "score:");
 		regularFont.draw(batch, glyphLayout, xs, y);
 		String score = String.valueOf(runner.gatheredCoins);
@@ -814,6 +816,8 @@ public class RunnerGame extends ApplicationAdapter {
 			// dont fail the game.
 			e.printStackTrace();
 		}
+
+		adsController.showBannerAd();
 	}
 
 	private void onTouch(float x, float y) {
