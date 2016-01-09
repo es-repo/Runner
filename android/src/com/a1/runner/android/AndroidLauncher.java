@@ -46,7 +46,7 @@ public class AndroidLauncher extends AndroidApplication implements IAdsControlle
 	int bestScore;
 	boolean submitBestScore;
 	boolean bannerAdEnabled = true;
-	
+	EventHandler onScoreSubmitted;
 	EventHandler onLoginSucceed;
 	EventHandler onLoginFailed;
 
@@ -316,6 +316,7 @@ public class AndroidLauncher extends AndroidApplication implements IAdsControlle
 						}
 						ad.onLoginFailed = null;
 						ad.onLoginSucceed = null;
+						ad.onScoreSubmitted = null;
 						e.printStackTrace();
 					}
 
@@ -327,30 +328,34 @@ public class AndroidLauncher extends AndroidApplication implements IAdsControlle
 			}
 			ad.onLoginFailed = null;
 			ad.onLoginSucceed = null;
+			ad.onScoreSubmitted = null;
 			e.printStackTrace();
 		}
 	}
 
 	@Override
 	public void login(int bestScore, boolean submitBestScore, boolean showLeaderboardAfterLogging,
-					  final EventHandler onLoginSucceed, final EventHandler onLoginFailed){
+					  final EventHandler onLoginSucceed, final EventHandler onLoginFailed, final EventHandler onScoreSubmitted){
 		this.showLeaderboardAfterLogging = true;
 		this.bestScore = bestScore;
 		this.submitBestScore = submitBestScore;
+		this.onScoreSubmitted = onScoreSubmitted;
 		login(onLoginSucceed, onLoginFailed);
 	}
 
 	@Override
-	public void submitScore(int score) {
+	public boolean submitScore(int score) {
 
 		if (!getGameServicesEnabled())
-			return;
+			return false;
 
 		try {
 			String leaderBoardId = getResources().getString(R.string.leaderboard_top_scores);
 			Games.Leaderboards.submitScore(gameHelper.getApiClient(),leaderBoardId, score);
+			return true;
 		}catch (Exception e) {
 			e.printStackTrace();
+			return false;
 		}
 	}
 
@@ -372,7 +377,7 @@ public class AndroidLauncher extends AndroidApplication implements IAdsControlle
 	@Override
 	public void onSignInSucceeded() {
 
-		if (onLoginFailed != null) {
+		if (onLoginSucceed != null) {
 			onLoginSucceed.action(0);
 		}
 		this.onLoginFailed = null;
@@ -381,7 +386,11 @@ public class AndroidLauncher extends AndroidApplication implements IAdsControlle
 		if (showLeaderboardAfterLogging) {
 			showLeaderboardAfterLogging = false;
 			if (submitBestScore) {
-				submitScore(bestScore);
+				boolean success = submitScore(bestScore);
+				if (success)
+					this.onScoreSubmitted.action(0);
+
+				this.onScoreSubmitted = null;
 				submitBestScore = false;
 			}
 			showLeaderboard();
@@ -396,6 +405,7 @@ public class AndroidLauncher extends AndroidApplication implements IAdsControlle
 		}
 		this.onLoginFailed = null;
 		this.onLoginSucceed = null;
+		this.onScoreSubmitted = null;
 	}
 
 	@Override

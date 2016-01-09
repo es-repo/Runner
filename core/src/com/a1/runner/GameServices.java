@@ -7,9 +7,9 @@ public interface GameServices {
     void login(final EventHandler onLoginSucceed, final EventHandler onLoginFailed);
 
     void login(int bestScore, boolean submitBestScore, boolean showLeaderboardAfterLogging,
-               final EventHandler onLoginSucceed, final EventHandler onLoginFailed);
+               final EventHandler onLoginSucceed, final EventHandler onLoginFailed, final EventHandler onScoreSubmitted);
 
-    void submitScore(int score);
+    boolean submitScore(int score);
 
     void showLeaderboard();
 

@@ -54,9 +54,12 @@ public class RunnerGame extends ApplicationAdapter {
 	int score;
 	String scoreString;
 	int bestScore;
+	final String bestScorePrefName = "bestScore";
 	boolean isNewBestScore;
+	final String isNewBestScorePrefName = "isNewBestScore2";
 	String bestScoreString;
 	boolean soundOff;
+	final String soundOffPrefName = "sondoff";
 
 	long ticks;
 	long touchedTimeInTicks;
@@ -268,18 +271,21 @@ public class RunnerGame extends ApplicationAdapter {
 	private void initPrefs(){
 		try {
 			prefs = Gdx.app.getPreferences("Runner");
-			if (!prefs.contains("bestScore")) {
-				prefs.putInteger("bestScore", 0);
+			if (!prefs.contains(bestScorePrefName)) {
+				prefs.putInteger(bestScorePrefName, 0);
 			}
-			bestScore = prefs.getInteger("bestScore");
+			bestScore = prefs.getInteger(bestScorePrefName);
 			bestScoreString = String.valueOf(bestScore);
 
-			if (!prefs.contains("isNewBestScore")){
-				prefs.putBoolean("isNewBestScore", false);
+			if (!prefs.contains(isNewBestScorePrefName)){
+				prefs.putBoolean(isNewBestScorePrefName, true);
+				isNewBestScore = true;
 			}
-			isNewBestScore = prefs.getBoolean("isNewBestScore");
+			else {
+				isNewBestScore = prefs.getBoolean(isNewBestScorePrefName);
+			}
 
-			if (!prefs.contains("sondoff")) {
+			if (!prefs.contains(soundOffPrefName)) {
 				prefs.putBoolean("soundoff", false);
 			}
 			soundOff = prefs.getBoolean("soundoff");
@@ -393,29 +399,30 @@ public class RunnerGame extends ApplicationAdapter {
 				}
 			};
 
+			final EventHandler scoreSubmitted = new EventHandler() {
+				@Override
+				public void action(int value) {
+					resetIsNewBestScore();
+				}
+			};
+
 			topScoresButton.setClickHandler(new EventHandler() {
 				@Override
 				public void action(int value) {
 					try {
+						boolean submitScore = isNewBestScore && bestScore > 0;
 						if (gameServices.getSignedIn()) {
-							if (isNewBestScore){
-								gameServices.submitScore(bestScore);
+							if (submitScore){
+								boolean success = gameServices.submitScore(bestScore);
+								if (success)
+									resetIsNewBestScore();
 							}
 							gameServices.showLeaderboard();
 						} else {
 							pauseGame();
-							gameServices.login(bestScore, isNewBestScore, true, loginDone, loginDone);
+							gameServices.login(bestScore, submitScore, true, loginDone, loginDone, scoreSubmitted);
 						}
 						analyticsNotifier.setScreenName("top_scores");
-						isNewBestScore = false;
-						try{
-							prefs.putBoolean("isNewBestScore", isNewBestScore);
-							prefs.flush();
-						}
-						catch (Exception e)	{
-							// dont fail the game.
-							e.printStackTrace();
-						}
 					}
 					catch (Exception e){
 						e.printStackTrace();
@@ -440,6 +447,19 @@ public class RunnerGame extends ApplicationAdapter {
 		});
 		buttons.add(rateButton);
 		return buttons;
+	}
+
+	private void resetIsNewBestScore()
+	{
+		isNewBestScore = false;
+		try{
+			prefs.putBoolean(isNewBestScorePrefName, isNewBestScore);
+			prefs.flush();
+		}
+		catch (Exception e)	{
+			// dont fail the game.
+			e.printStackTrace();
+		}
 	}
 
 	private ArrayList<Figure> createPauseResumeIcons(){
@@ -759,10 +779,6 @@ public class RunnerGame extends ApplicationAdapter {
 
 		if (this.inGame) {
 
-			if (touchedTimeInTicks - ticks > -3){
-				runner.jump();
-			}
-
 			for (int l = 0; l < platformsLevelsCount; l++) {
 				for (int i = 0; i < platformsPerLevelCount; i++) {
 					Platform w = (Platform)this.platforms[l].get(i);
@@ -795,10 +811,14 @@ public class RunnerGame extends ApplicationAdapter {
 			if (onPlatform == null) {
 				this.runner.velocity.y += this.runner.gravyAcc;
 			} else {
-				if (this.runner.velocity.y < 0) {
+				if (this.runner.isInFall()) {
 					this.runner.velocity.y = 0;
 					this.runner.boundingBox.y = onPlatform.boundingBox.y + onPlatform.boundingBox.height;
 				}
+			}
+
+			if (touchedTimeInTicks - ticks > -3){
+				runner.jump();
 			}
 
 			float bottom = -this.runner.boundingBox.height * 3;
@@ -837,8 +857,8 @@ public class RunnerGame extends ApplicationAdapter {
 				bestScore = runner.gatheredCoins;
 				isNewBestScore = true;
 				bestScoreString = String.valueOf(bestScore);
-				prefs.putInteger("bestScore", bestScore);
-				prefs.putBoolean("isNewBestScore", isNewBestScore);
+				prefs.putInteger(bestScorePrefName, bestScore);
+				prefs.putBoolean(isNewBestScorePrefName, isNewBestScore);
 				prefs.flush();
 			}
 		}
