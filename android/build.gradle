@@ -20,6 +20,11 @@ android {
         release {
         }
     }
+
+    dexOptions {
+        maxProcessCount 4 // this is the default value
+        javaMaxHeapSize "2g"
+    }
 }
 
 // called every time gradle gets executed, takes the native dependencies of
