@@ -100,7 +100,7 @@ public class GameAssets {
         }
 
         HashMap<String, String> musics = new HashMap<String, String>();
-        musics.put("song", "song.mp3");
+        musics.put("song", "song.ogg");
 
         for (Map.Entry<String, String> entry : musics.entrySet())	{
             Music music = Gdx.audio.newMusic(Gdx.files.internal("sounds/" + entry.getValue()));
@@ -108,5 +108,4 @@ public class GameAssets {
             music.setLooping(true);
         }
     }
-
 }
